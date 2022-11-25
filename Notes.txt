@@ -65,8 +65,8 @@ TemperatureControlValue:
     CentralAir
 
 HouseFeatureValue:
-    1stFlrSF
-    2ndFlrSF
+    X1stFlrSF
+    X2ndFlrSF
     LowQualFinSF
     GrLivArea
     FullBath
@@ -107,3 +107,30 @@ Other: Not sure what categories these belong to
     Fence
     MiscFeature
     MiscVal
+
+Columns that need to be converted from an int to a factor:
+    MSSubClass
+
+Columns that will likely need a log transformation:
+    SalePrice
+
+Columns that might need a log transformation:
+    LotArea
+    MasVnrArea
+    BsmtFinSF1
+    BsmtFinSF2
+    BsmtUnfSF
+    TotalBsmtSF
+    X1stFlrSF
+    X2ndFlrSF
+    LowQualFinSF
+    GrLivArea
+    GarageArea
+    WoodDeckSF
+    OpenPorchSF
+    EnclosedPorch
+    X3SsnPorch
+    ScreenPorch
+    PoolArea
+
+Other Feature Engineering Ideas:

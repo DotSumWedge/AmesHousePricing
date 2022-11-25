@@ -1,8 +1,83 @@
 Feature Engineering - create feature based on summary of similar features
+Predicting - SalePrice
 
+TimeValue:
+    MoSold
+    YrSold
+
+SaleValue:
+    SaleType
+    SaleCondition
+
+LocationValue:
+    MSZoning
+    LotFrontage
+    Street
+    Alley
+    Neighborhood
+    Condition1
+    Condition2
 
 LandValue:
+    LotArea
+    LotShape
+    LandContour
+    LotConfig
+    LandSlope
 
+GeneralBuildingValue:
+    BldgType
+    HouseStyle
+    OverallQual
+    OverallCond
+    YearBuilt
+    YearRemodAdd
+    Foundation
+
+RoofValue:
+    RoofStyle
+    RoofMatl
+
+BuildingMaterialValue:
+    Exterior1st
+    Exterior2nd
+    MasVnrType
+    MasVnrArea
+    ExterQual
+    ExterCond
+
+BasementValue:
+    TotalBsmtSF
+    BsmtQual
+    BsmtCond
+    BsmtExposure
+    BsmtFinType1
+    BsmtFinSF1
+    BsmtFinType2
+    BsmtFinSF2
+    BsmtUnfSF
+    BsmtFullBath
+    BsmtHalfBath
+
+TemperatureControlValue:
+    Heating
+    HeatingQC
+    CentralAir
+
+HouseFeatureValue:
+    1stFlrSF
+    2ndFlrSF
+    LowQualFinSF
+    GrLivArea
+    FullBath
+    HalfBath
+    Bedroom
+    Kitchen
+    KitchenQual
+    TotRmsAbvGrd
+    Functional
+    Fireplaces
+    FireplaceQu
 
 GarageValue:
     GarageType
@@ -23,3 +98,12 @@ PorchValue:
 PoolValue:
     PoolArea
     PoolQC
+
+Other: Not sure what categories these belong to
+    MSSubClass - ?? 
+    Utilities
+    Electrical
+    PavedDrive
+    Fence
+    MiscFeature
+    MiscVal

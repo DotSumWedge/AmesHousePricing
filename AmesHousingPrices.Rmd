@@ -14,7 +14,7 @@ library(naniar)
 ```
 
 ```{r}
-AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousingPricesProject/train.csv"))
+AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
 
 AmesHouesingDataFrame
 ```

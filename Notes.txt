@@ -1,6 +1,24 @@
-Feature Engineering:
+Feature Engineering - create feature based on summary of similar features
 
 
+LandValue:
+
+
+GarageValue:
+    GarageType
+    GarageYrBlt
+    GarageFinish
+    GarageCars
+    GarageArea
+    GarageQual
+    GarageCond
+
+PorchValue:
+    WoodDeckSF
+    OpenPorchSF
+    EnclosedPorch
+    3SsnPorch
+    ScreenPorch
 
 PoolValue:
     PoolArea

@@ -24,7 +24,8 @@ miss_var_summary(AmesHouesingDataFrame)
 ```
 
 ```{r}
-
+apply(AmesHouesingDataFrame, 2, function(x) length(unique(x)))
+ncol(AmesHouesingDataFrame)
 ```
 
 ```{r}

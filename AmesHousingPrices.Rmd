@@ -1,0 +1,52 @@
+---
+title: "AmesHousingPrices"
+author: "DerekRogers"
+date: "2022-11-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(naniar)
+```
+
+```{r}
+AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousingPricesProject/train.csv"))
+
+AmesHouesingDataFrame
+```
+
+```{r}
+miss_var_summary(AmesHouesingDataFrame)
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```

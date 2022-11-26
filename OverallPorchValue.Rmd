@@ -42,7 +42,7 @@ AmesHouesingDataFrame
 #    WoodDeckSF - requires log transformation
 #    OpenPorchSF - requires log transformation
 #    EnclosedPorch - DOES NOT require log transformation
-#    X3SsnPorch - requires log transformation
+#    X3SsnPorch - requires log transformation but doesn't have a significant p value
 #    ScreenPorch - requires log transformation
 ```
 
@@ -212,7 +212,19 @@ summary(fit)
 ```
 
 ```{r}
+# Todo: need to figure out how to combine these models.Each is using a dataframe that only contains rows with non zero values675
 
+fit = lm(LogSalePrice~LogWoodDeckSF, data = AmesHouesingDataFrameWoodDeck)
+summary(fit)
+
+fit = lm(LogSalePrice~LogOpenPorchSF, data = AmesHouesingDataFrameOpenPorch)
+summary(fit)
+
+fit = lm(LogSalePrice~EnclosedPorch, data = AmesHouesingDataFrameEnclosedPorch)
+summary(fit)
+
+fit = lm(LogSalePrice~LogScreenPorch, data = AmesHouesingDataFrameScreenPorch)
+summary(fit)
 ```
 
 ```{r}

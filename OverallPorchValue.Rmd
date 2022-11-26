@@ -1,0 +1,187 @@
+---
+title: "OverallPorchValue"
+author: "DerekRogers"
+date: "2022-11-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(naniar)
+library(ggplot2)
+library(dplyr)
+```
+
+```{r}
+AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
+
+# Add 1 to all deck/porch square footage so a log transformation works (log(1) = 0)
+AmesHouesingDataFrame$WoodDeckSF = AmesHouesingDataFrame$WoodDeckSF + 1
+AmesHouesingDataFrame$OpenPorchSF = AmesHouesingDataFrame$OpenPorchSF + 1
+AmesHouesingDataFrame$EnclosedPorch = AmesHouesingDataFrame$EnclosedPorch + 1
+AmesHouesingDataFrame$X3SsnPorch = AmesHouesingDataFrame$X3SsnPorch + 1
+AmesHouesingDataFrame$ScreenPorch = AmesHouesingDataFrame$ScreenPorch + 1
+
+AmesHouesingDataFrame$LogWoodDeckSF = log(AmesHouesingDataFrame$WoodDeckSF)
+AmesHouesingDataFrame$LogOpenPorchSF = log(AmesHouesingDataFrame$OpenPorchSF)
+AmesHouesingDataFrame$LogEnclosedPorch = log(AmesHouesingDataFrame$EnclosedPorch)
+AmesHouesingDataFrame$LogX3SsnPorch = log(AmesHouesingDataFrame$X3SsnPorch)
+AmesHouesingDataFrame$LogScreenPorch = log(AmesHouesingDataFrame$ScreenPorch)
+
+AmesHouesingDataFrame
+```
+
+```{r}
+# Feature engineer an overall porch value from the columns:
+#
+#    WoodDeckSF - requires log transformation
+#    OpenPorchSF - requires log transformation
+#    EnclosedPorch - DOES NOT require log transformation
+#    X3SsnPorch - requires log transformation
+#    ScreenPorch - requires log transformation
+```
+
+```{r}
+#Shows a right skew for WoodDeckSF that is corrected with a log transformation
+
+AmesHouesingDataFrameWoodDeck = filter(AmesHouesingDataFrame, WoodDeckSF > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameWoodDeck$WoodDeckSF, xlab='Wood Deck Size in feet^2', main='Histogram of Wood Deck Size')
+
+# Box plot
+boxplot(AmesHouesingDataFrameWoodDeck$WoodDeckSF, xlab = "Wood Deck", ylab = "Wood Deck Size in feet^2", main = "Boxplot of Wood Deck Size")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameWoodDeck$WoodDeckSF, pch = 1, frame = FALSE, main = "Q-Q Plot for Wood Deck Size", ylab = "Wood Deck Size in feet^2")
+qqline(AmesHouesingDataFrameWoodDeck$WoodDeckSF, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameWoodDeck$LogWoodDeckSF, xlab='Wood Deck Size in log(feet^2)', main='Histogram of Log Wood Deck Size')
+
+# Box plot
+boxplot(AmesHouesingDataFrameWoodDeck$LogWoodDeckSF, xlab = "Wood Deck", ylab = "Wood Deck Size in log(feet^2)", main = "Boxplot of Log Wood Deck Size")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameWoodDeck$LogWoodDeckSF, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Wood Deck Size", ylab = "Wood Deck Size in log(feet^2)")
+qqline(AmesHouesingDataFrameWoodDeck$LogWoodDeckSF, col = "steelblue", lwd = 2)
+```
+
+```{r}
+#Shows a right skew for OpenPorchSF that is corrected with a log transformation
+
+AmesHouesingDataFrameOpenPorch = filter(AmesHouesingDataFrame, OpenPorchSF > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameOpenPorch$OpenPorchSF, xlab='Open Porch Size in feet^2', main='Histogram of Open Porch Size')
+
+# Box plot
+boxplot(AmesHouesingDataFrameOpenPorch$OpenPorchSF, xlab = "Open Porch", ylab = "Open Porch Size in feet^2", main = "Boxplot of Open Porch Size")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameOpenPorch$OpenPorchSF, pch = 1, frame = FALSE, main = "Q-Q Plot for Open Porch Size", ylab = "Open Porch Size in feet^2")
+qqline(AmesHouesingDataFrameOpenPorch$OpenPorchSF, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameOpenPorch$LogOpenPorchSF, xlab='Open Porch Size in log(feet^2)', main='Histogram of Log Open Porch Size')
+
+# Box plot
+boxplot(AmesHouesingDataFrameOpenPorch$LogOpenPorchSF, xlab = "Open Porch", ylab = "Open Porch Size in log(feet^2)", main = "Boxplot of Log Open Porch Size")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameOpenPorch$LogOpenPorchSF, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Open Porch Size", ylab = "Open Porch Size in log(feet^2)")
+qqline(AmesHouesingDataFrameOpenPorch$LogOpenPorchSF, col = "steelblue", lwd = 2)
+```
+
+```{r}
+#Shows a right skew for EnclosedPorch but a log transformation doesn't seem to help
+
+AmesHouesingDataFrameEnclosedPorch = filter(AmesHouesingDataFrame, EnclosedPorch > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameEnclosedPorch$EnclosedPorch, xlab='Enclosed Porch Size in feet^2', main='Histogram of Enclosed Porch Size')
+
+# Box plot
+boxplot(AmesHouesingDataFrameEnclosedPorch$EnclosedPorch, xlab = "Enclosed Porch", ylab = "Enclosed Porch Size in feet^2", main = "Boxplot of Enclosed Porch Size")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameEnclosedPorch$EnclosedPorch, pch = 1, frame = FALSE, main = "Q-Q Plot for Enclosed Porch Size", ylab = "Enclosed Porch Size in feet^2")
+qqline(AmesHouesingDataFrameEnclosedPorch$EnclosedPorch, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameEnclosedPorch$LogEnclosedPorch, xlab='Enclosed Porch Size in log(feet^2)', main='Histogram of Log Enclosed Porch Size')
+
+# Box plot
+boxplot(AmesHouesingDataFrameEnclosedPorch$LogEnclosedPorch, xlab = "Enclosed Porch", ylab = "Enclosed Porch Size in log(feet^2)", main = "Boxplot of Log Enclosed Porch Size")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameEnclosedPorch$LogEnclosedPorch, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Enclosed Porch Size", ylab = "Enclosed Porch Size in log(feet^2)")
+qqline(AmesHouesingDataFrameEnclosedPorch$LogEnclosedPorch, col = "steelblue", lwd = 2)
+```
+
+```{r}
+#Shows a right skew for X3SsnPorch that is corrected with a log transformation
+
+AmesHouesingDataFrameX3SsnPorch = filter(AmesHouesingDataFrame, X3SsnPorch > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameX3SsnPorch$X3SsnPorch, xlab='Three Season Porch Size in feet^2', main='Histogram of Three Season Porch Size')
+
+# Box plot
+boxplot(AmesHouesingDataFrameX3SsnPorch$X3SsnPorch, xlab = "Three Season Porch", ylab = "Three Season Porch Size in feet^2", main = "Boxplot of Three Season Porch Size")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameX3SsnPorch$X3SsnPorch, pch = 1, frame = FALSE, main = "Q-Q Plot for Three Season Porch Size", ylab = "Three Season Porch Size in feet^2")
+qqline(AmesHouesingDataFrameX3SsnPorch$X3SsnPorch, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameX3SsnPorch$LogX3SsnPorch, xlab='Three Season Porch Size in log(feet^2)', main='Histogram of Log Three Season Porch Size')
+
+# Box plot
+boxplot(AmesHouesingDataFrameX3SsnPorch$LogX3SsnPorch, xlab = "Three Season Porch", ylab = "Three Season Porch Size in log(feet^2)", main = "Boxplot of Log Three Season Porch Size")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameX3SsnPorch$LogX3SsnPorch, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Three Season Porch Size", ylab = "Three Season Porch Size in log(feet^2)")
+qqline(AmesHouesingDataFrameX3SsnPorch$LogX3SsnPorch, col = "steelblue", lwd = 2)
+```
+
+```{r}
+#Shows a right skew for ScreenPorch that is corrected with a log transformation
+
+AmesHouesingDataFrameScreenPorch = filter(AmesHouesingDataFrame, ScreenPorch > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameScreenPorch$ScreenPorch, xlab='Screen Porch Size in feet^2', main='Histogram of Screen Porch Size')
+
+# Box plot
+boxplot(AmesHouesingDataFrameScreenPorch$ScreenPorch, xlab = "Screen Porch", ylab = "Screen Porch Size in feet^2", main = "Boxplot of Screen Porch Size")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameScreenPorch$ScreenPorch, pch = 1, frame = FALSE, main = "Q-Q Plot for Screen Porch Size", ylab = "Screen Porch Size in feet^2")
+qqline(AmesHouesingDataFrameScreenPorch$ScreenPorch, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameScreenPorch$LogScreenPorch, xlab='Screen Porch Size in log(feet^2)', main='Histogram of Log Screen Porch Size')
+
+# Box plot
+boxplot(AmesHouesingDataFrameScreenPorch$LogScreenPorch, xlab = "Screen Porch", ylab = "Screen Porch Size in log(feet^2)", main = "Boxplot of Log Screen Porch Size")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameScreenPorch$LogScreenPorch, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Screen Porch Size", ylab = "Screen Porch Size in log(feet^2)")
+qqline(AmesHouesingDataFrameScreenPorch$LogScreenPorch, col = "steelblue", lwd = 2)
+```
+
+```{r}
+AmesHouesingDataFrameWoodDeck %>% ggplot(aes(x = LogWoodDeckSF, y = LogSalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="log(Wood Deck Size) vs log(sales price) in Ames Iowa")
+```
+
+```{r}
+fit = lm(LogSalePrice~LogWoodDeckSF, data = AmesHouesingDataFrameWoodDeck)
+summary(fit)
+```

@@ -11,13 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(naniar)
-<<<<<<< HEAD
 library(tidyverse)
-#install.packages("DataExplorer")
-#library(DataExplorer)
-=======
 library(ggplot2)
->>>>>>> 436c45014ebf88239a78b6316967c92e39d6fb7e
 ```
 
 ```{r}
@@ -136,9 +131,8 @@ AmesHouesingDataFrame$MiscFeature <- as.factor(AmesHouesingDataFrame$MiscFeature
 AmesHouesingDataFrame$MasVnrType <- as.character(AmesHouesingDataFrame$MasVnrType)
 AmesHouesingDataFrame$MasVnrType[is.na(AmesHouesingDataFrame$MasVnrType)] <- "None"
 AmesHouesingDataFrame$MasVnrType <- as.factor(AmesHouesingDataFrame$MasVnrType)
-
+```
                                               
-=======
 ```{r}
 # Histogram that shows a right skewed normal distribution
 hist(AmesHouesingDataFrame$SalePrice, xlab='House Price (dollars)', main='Histogram of Housing Prices')
@@ -149,7 +143,6 @@ boxplot(AmesHouesingDataFrame$SalePrice, xlab = "Houses", ylab = "House Price (d
 # QQ plot where the prices drift away from the identity line
 qqnorm(AmesHouesingDataFrame$SalePrice, pch = 1, frame = FALSE, main = "Q-Q Plot For Housing Prices", ylab = "House Price (dollars)")
 qqline(AmesHouesingDataFrame$SalePrice, col = "steelblue", lwd = 2)
->>>>>>> 436c45014ebf88239a78b6316967c92e39d6fb7e
 ```
 
 ```{r}

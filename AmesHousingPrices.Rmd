@@ -33,6 +33,18 @@ ncol(AmesHouesingDataFrame)
 ```
 
 ```{r}
+# Histogram
+hist(AmesHouesingDataFrame$SalePrice, xlab='House Price (dollars)', main='Histogram of Housing Prices')
+
+# Box plot
+boxplot(AmesHouesingDataFrame$SalePrice, xlab = "Houses", ylab = "House Price (dollars)", main = "Boxplot of Housing Prices")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrame$SalePrice, pch = 1, frame = FALSE, main = "Q-Q Plot For Housing Prices", ylab = "House Price (dollars)")
+qqline(AmesHouesingDataFrame$SalePrice, col = "steelblue", lwd = 2)
+```
+
+```{r}
 AmesHouesingDataFrame %>% ggplot(aes(x = GrLivArea, y = SalePrice, color = HouseStyle)) + 
   geom_jitter() + geom_smooth(method = "lm") +
   labs(title="Above ground living area vs sales price in Ames Iowa")

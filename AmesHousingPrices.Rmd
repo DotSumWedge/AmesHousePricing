@@ -28,30 +28,51 @@ miss_var_summary(AmesHouesingDataFrame)
 ```
 
 ```{r}
+AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
+AmesHouesingDataFrame
+```
+
+
+```{r}
 apply(AmesHouesingDataFrame, 2, function(x) length(unique(x)))
 ncol(AmesHouesingDataFrame)
 ```
 
 ```{r}
-# Histogram
+# Histogram that shows a right skewed normal distribution
 hist(AmesHouesingDataFrame$SalePrice, xlab='House Price (dollars)', main='Histogram of Housing Prices')
 
-# Box plot
+# Box plot that shows a right skew
 boxplot(AmesHouesingDataFrame$SalePrice, xlab = "Houses", ylab = "House Price (dollars)", main = "Boxplot of Housing Prices")
 
-# QQ plot
+# QQ plot where the prices drift away from the identity line
 qqnorm(AmesHouesingDataFrame$SalePrice, pch = 1, frame = FALSE, main = "Q-Q Plot For Housing Prices", ylab = "House Price (dollars)")
 qqline(AmesHouesingDataFrame$SalePrice, col = "steelblue", lwd = 2)
 ```
 
 ```{r}
-AmesHouesingDataFrame %>% ggplot(aes(x = GrLivArea, y = SalePrice, color = HouseStyle)) + 
-  geom_jitter() + geom_smooth(method = "lm") +
-  labs(title="Above ground living area vs sales price in Ames Iowa")
+# A log transformation of housing prices reduces the right skewness of the histogram and boxplot as well as keeps housing prices closer to the identity line in the QQ plot
+
+# Histogram
+hist(AmesHouesingDataFrame$LogSalePrice, xlab='House Price in log(dollars)', main='Histogram of Log Housing Prices')
+
+# Box plot
+boxplot(AmesHouesingDataFrame$LogSalePrice, xlab = "Houses", ylab = "House Price in log(dollars)", main = "Boxplot of Log Housing Prices")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrame$LogSalePrice, pch = 1, frame = FALSE, main = "Q-Q Plot For Log Housing Prices", ylab = "House Price in log(dollars)")
+qqline(AmesHouesingDataFrame$LogSalePrice, col = "steelblue", lwd = 2)
 ```
 
 ```{r}
-fit = lm(SalePrice~GrLivArea, data = AmesHouesingDataFrame)
+# There are 2 extreme outliers for 2Story houses that are way below the prediction interval at the middle right of the graph
+AmesHouesingDataFrame %>% ggplot(aes(x = GrLivArea, y = LogSalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="Above ground living area vs log(sales price) in Ames Iowa")
+```
+
+```{r}
+fit = lm(LogSalePrice~GrLivArea, data = AmesHouesingDataFrame)
 summary(fit)
 ```
 

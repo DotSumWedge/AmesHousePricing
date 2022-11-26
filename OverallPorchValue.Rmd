@@ -26,6 +26,7 @@ AmesHouesingDataFrame$EnclosedPorch = AmesHouesingDataFrame$EnclosedPorch + 1
 AmesHouesingDataFrame$X3SsnPorch = AmesHouesingDataFrame$X3SsnPorch + 1
 AmesHouesingDataFrame$ScreenPorch = AmesHouesingDataFrame$ScreenPorch + 1
 
+# Create log transformation column for the various porch square foot columns
 AmesHouesingDataFrame$LogWoodDeckSF = log(AmesHouesingDataFrame$WoodDeckSF)
 AmesHouesingDataFrame$LogOpenPorchSF = log(AmesHouesingDataFrame$OpenPorchSF)
 AmesHouesingDataFrame$LogEnclosedPorch = log(AmesHouesingDataFrame$EnclosedPorch)

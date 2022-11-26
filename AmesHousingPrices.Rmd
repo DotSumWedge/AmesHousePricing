@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(naniar)
+library(ggplot2)
 ```
 
 ```{r}
@@ -20,6 +21,9 @@ AmesHouesingDataFrame
 ```
 
 ```{r}
+# Many of these fields use Na purposefully to indicate that feature doesn't exist for that house according to the data descriptions
+  # but others say nothing in the data description about Na values 
+
 miss_var_summary(AmesHouesingDataFrame)
 ```
 
@@ -29,11 +33,14 @@ ncol(AmesHouesingDataFrame)
 ```
 
 ```{r}
-
+AmesHouesingDataFrame %>% ggplot(aes(x = GrLivArea, y = SalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="Above ground living area vs sales price in Ames Iowa")
 ```
 
 ```{r}
-
+fit = lm(SalePrice~GrLivArea, data = AmesHouesingDataFrame)
+summary(fit)
 ```
 
 ```{r}

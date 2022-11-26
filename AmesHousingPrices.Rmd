@@ -60,7 +60,7 @@ hist(AmesHouesingDataFrame$LogSalePrice, xlab='House Price in log(dollars)', mai
 boxplot(AmesHouesingDataFrame$LogSalePrice, xlab = "Houses", ylab = "House Price in log(dollars)", main = "Boxplot of Log Housing Prices")
 
 # QQ plot
-qqnorm(AmesHouesingDataFrame$LogSalePrice, pch = 1, frame = FALSE, main = "Q-Q Plot For Log Housing Prices", ylab = "House Price in log(dollars)")
+qqnorm(AmesHouesingDataFrame$LogSalePrice, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Housing Prices", ylab = "House Price in log(dollars)")
 qqline(AmesHouesingDataFrame$LogSalePrice, col = "steelblue", lwd = 2)
 ```
 
@@ -74,14 +74,6 @@ AmesHouesingDataFrame %>% ggplot(aes(x = GrLivArea, y = LogSalePrice, color = Ho
 ```{r}
 fit = lm(LogSalePrice~GrLivArea, data = AmesHouesingDataFrame)
 summary(fit)
-```
-
-```{r}
-
-```
-
-```{r}
-
 ```
 
 ```{r}

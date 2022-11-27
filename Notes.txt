@@ -9,7 +9,7 @@ SaleValue:
     SaleType
     SaleCondition
 
-LocationValue:
+LocationValue: Started
     MSZoning
     LotFrontage
     Street
@@ -88,14 +88,14 @@ GarageValue:
     GarageQual
     GarageCond
 
-PorchValue:
+PorchValue: Started
     WoodDeckSF
     OpenPorchSF
     EnclosedPorch
     3SsnPorch
     ScreenPorch
 
-PoolValue:
+PoolValue: Started
     PoolArea
     PoolQC
 

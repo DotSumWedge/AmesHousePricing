@@ -29,7 +29,7 @@ AmesHouesingDataFrame
 ```
 
 ```{r}
-#Both pool aread and the log of pool area don't have a significant p value. There are also very few observations
+#Lot area is heavily right skewed which is corrected with a log transformation
 
 AmesHouesingDataFrameLotArea = filter(AmesHouesingDataFrame, LotArea > 1)
 

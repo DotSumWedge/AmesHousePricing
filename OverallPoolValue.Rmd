@@ -19,11 +19,8 @@ knitr::opts_chunk$set(echo = TRUE)
 AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
 AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
 
-# Add 1 to all deck/porch square footage so a log transformation works (log(1) = 0)
-AmesHouesingDataFrame$PoolArea = AmesHouesingDataFrame$PoolArea + 1
-
 # Create log transformation column for the various porch square foot columns
-AmesHouesingDataFrame$LogPoolArea = log(AmesHouesingDataFrame$PoolArea)
+AmesHouesingDataFrame$LogPoolArea = log(AmesHouesingDataFrame$PoolArea + 1)
 
 AmesHouesingDataFrame
 ```
@@ -61,4 +58,11 @@ fit = lm(LogSalePrice~PoolArea, data = AmesHouesingDataFramePoolArea)
 summary(fit)
 fit = lm(LogSalePrice~LogPoolArea, data = AmesHouesingDataFramePoolArea)
 summary(fit)
+```
+
+```{r}
+#AmesHouesingDataFramePoolArea
+# Outlier observations
+PoolObservations = AmesHouesingDataFramePoolArea[order(-AmesHouesingDataFramePoolArea$LogPoolArea),]
+PoolObservations
 ```

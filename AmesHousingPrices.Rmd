@@ -318,8 +318,7 @@ grid.arrange(plot1, plot2, plot3, plot4)
 ```
 
 
-
-Numerical Encoding so that we can explore correlation for LAND VAR
+Numerical Encoding so that we can explore correlation for LOT VAR
 ```{r}
 AmesHouesingDataFrame$LotShapeNum <- as.numeric(factor(AmesHouesingDataFrame$LotShape,
                                                         levels = c("Reg", "IR1", "IR2", "IR3"),
@@ -346,20 +345,44 @@ AmesHouesingDataFrame$LandSlopeNum <- as.numeric(factor(AmesHouesingDataFrame$La
 
 
 
-setting up the correlation plot for creating mega variables
+setting up the correlation plot for creating mega variables - LOT
 ```{r}
 # selecting var for exploration:
-pool_corr <- c("LogSalePrice", "LogLotArea", "LotShapeNum",
+lot_corr <- c("LogSalePrice", "LogLotArea", "LotShapeNum",
                "LandContourNum", "LotConfigNum", "LandSlopeNum")
 
 # getting the rows for each of the vars to be explored:
-pool_df <- AmesHouesingDataFrame[, pool_corr]
-pool_df <- cor(pool_df)
-glimpse(pool_df)
+lot_df <- AmesHouesingDataFrame[, lot_corr]
+lot_df <- cor(lot_df)
+glimpse(lot_df)
 # plotting corr plot with ggcorrplot
-ggcorrplot(corr = pool_df, lab = TRUE, lab_size = 3,
+ggcorrplot(corr = lot_df, lab = TRUE, lab_size = 3,
            colors = c("#6D9EC1", "white", "#E46726")) +
   labs(title = "Correlation Between Sales Price and Lot Features", 
+       subtitle = "Netural and Positive Correlation") +
+  theme(plot.title = element_text(hjust = .5),
+        plot.subtitle = element_text(hjust = .5))
+
+```
+
+
+
+
+
+setting up the correlation plot for creating mega variables - PORCH
+```{r}
+# selecting var for exploration:
+porch_corr <- c("LogSalePrice", "EnclosedPorch", "LogScreenPorch",
+                "LogOpenPorchSF", "LogWoodDeckSF")
+
+# getting the rows for each of the vars to be explored:
+porch_df <- AmesHouesingDataFrame[, porch_corr]
+porch_df <- cor(porch_df)
+glimpse(porch_df)
+# plotting corr plot with ggcorrplot
+ggcorrplot(corr = porch_df, lab = TRUE, lab_size = 3,
+           colors = c("#6D9EC1", "white", "#E46726")) +
+  labs(title = "Correlation Between Sales Price and Porch Features", 
        subtitle = "Netural and Positive Correlation") +
   theme(plot.title = element_text(hjust = .5),
         plot.subtitle = element_text(hjust = .5))

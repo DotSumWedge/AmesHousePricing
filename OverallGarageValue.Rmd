@@ -1,0 +1,67 @@
+---
+title: "OverallGarageValue"
+author: "Derek Rogers"
+date: "2022-11-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Feature engineer an overall garage value from the columns:
+#    GarageType
+#    GarageYrBlt
+#    GarageFinish
+#    GarageCars
+#    GarageArea - requires log transformation
+#    GarageQual
+#    GarageCond
+```
+
+```{r}
+AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+
+AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
+AmesHouesingDataFrame$LogGarageArea = log(AmesHouesingDataFrame$GarageArea + 1)
+
+AmesHouesingDataFrame
+```
+
+```{r}
+#Garage area is heavily right skewed which is corrected with a log transformation
+
+AmesHouesingDataFrameGarageArea = filter(AmesHouesingDataFrame, GarageArea > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameGarageArea$GarageArea, xlab='Garage Area (Feet^2)', main='Histogram of Garage Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameGarageArea$GarageArea, xlab = "Garage Area", ylab = "Garage Area in log(feet^2)", main = "Boxplot of Garage Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameGarageArea$GarageArea, pch = 1, frame = FALSE, main = "Q-Q Plot for Garage Area", ylab = "Garage Area in log(feet^2)")
+qqline(AmesHouesingDataFrameGarageArea$GarageArea, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameGarageArea$LogGarageArea, xlab='Garage Area in log(feet^2)', main='Histogram of log Garage Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameGarageArea$LogGarageArea, xlab = "Garage Area", ylab = "Garage Area in log(feet^2)", main = "Boxplot of Log Garage Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameGarageArea$LogGarageArea, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Garage Area", ylab = "Garage Area in log(feet^2)")
+qqline(AmesHouesingDataFrameGarageArea$LogGarageArea, col = "steelblue", lwd = 2)
+
+AmesHouesingDataFrameGarageArea %>% ggplot(aes(x = GarageArea, y = SalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="Garage Area in Feet^2 vs sales price in Ames Iowa")
+
+AmesHouesingDataFrameGarageArea %>% ggplot(aes(x = LogGarageArea, y = LogSalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="log(Garage Area in Feet^2) vs log(sales price) in Ames Iowa")
+
+fit = lm(LogSalePrice~LogGarageArea, data = AmesHouesingDataFrameGarageArea)
+summary(fit)
+```

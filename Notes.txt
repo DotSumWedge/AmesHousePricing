@@ -18,7 +18,7 @@ LocationValue: Started
     Condition1
     Condition2
 
-LandValue:
+LandValue: Started
     LotArea
     LotShape
     LandContour
@@ -112,25 +112,27 @@ Columns that need to be converted from an int to a factor:
     MSSubClass
 
 Columns that will likely need a log transformation:
-    SalePrice
+
 
 Columns that might need a log transformation:
-    LotArea
-    MasVnrArea
-    BsmtFinSF1
-    BsmtFinSF2
-    BsmtUnfSF
-    TotalBsmtSF
-    X1stFlrSF
-    X2ndFlrSF
-    LowQualFinSF
-    GrLivArea
-    GarageArea
-    WoodDeckSF
-    OpenPorchSF
-    EnclosedPorch
-    X3SsnPorch
-    ScreenPorch
-    PoolArea
+    SalePrice - Yes
+    LotArea - Yes
+    LotFrontage - Yes
+    MasVnrArea - 
+    BsmtFinSF1 - 
+    BsmtFinSF2 - 
+    BsmtUnfSF - 
+    TotalBsmtSF - 
+    X1stFlrSF - 
+    X2ndFlrSF - 
+    LowQualFinSF - 
+    GrLivArea - 
+    GarageArea - Yes
+    WoodDeckSF - Yes
+    OpenPorchSF - Yes
+    EnclosedPorch - No
+    X3SsnPorch - Yes but not significant p value
+    ScreenPorch - Yes
+    PoolArea - Yes but not significant p value
 
 Other Feature Engineering Ideas:

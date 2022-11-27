@@ -10,6 +10,17 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+# Feature engineer an overall location value from the columns:
+#    MSZoning
+#    LotFrontage - integer
+#    Street
+#    Alley
+#    Neighborhood
+#    Condition1
+#    Condition2
+```
+
+```{r}
 AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
 AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
 
@@ -23,6 +34,8 @@ AmesHouesingDataFrame
 ```
 
 ```{r}
+#Shows a right skew for LotFrontage that is corrected with a log transformation however the QQ plot still deviates from the identity line at the ends
+
 AmesHouesingDataFrameLotFrontage = filter(AmesHouesingDataFrame, LotFrontage > 1)
 
 # Histogram

@@ -16,6 +16,16 @@ library(dplyr)
 ```
 
 ```{r}
+# Feature engineer an overall porch value from the columns:
+#
+#    WoodDeckSF - requires log transformation
+#    OpenPorchSF - requires log transformation
+#    EnclosedPorch - DOES NOT require log transformation
+#    X3SsnPorch - requires log transformation but doesn't have a significant p value
+#    ScreenPorch - requires log transformation
+```
+
+```{r}
 AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
 AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
 
@@ -34,16 +44,6 @@ AmesHouesingDataFrame$LogX3SsnPorch = log(AmesHouesingDataFrame$X3SsnPorch)
 AmesHouesingDataFrame$LogScreenPorch = log(AmesHouesingDataFrame$ScreenPorch)
 
 AmesHouesingDataFrame
-```
-
-```{r}
-# Feature engineer an overall porch value from the columns:
-#
-#    WoodDeckSF - requires log transformation
-#    OpenPorchSF - requires log transformation
-#    EnclosedPorch - DOES NOT require log transformation
-#    X3SsnPorch - requires log transformation but doesn't have a significant p value
-#    ScreenPorch - requires log transformation
 ```
 
 ```{r}

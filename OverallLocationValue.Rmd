@@ -1,0 +1,54 @@
+---
+title: "OverallLocationValue"
+author: "DerekRogers"
+date: "2022-11-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
+
+# Add 1 to all deck/porch square footage so a log transformation works (log(1) = 0)
+AmesHouesingDataFrame$LotFrontage = AmesHouesingDataFrame$LotFrontage + 1
+
+# Create log transformation column for the various porch square foot columns
+AmesHouesingDataFrame$LogLotFrontage = log(AmesHouesingDataFrame$LotFrontage)
+
+AmesHouesingDataFrame
+```
+
+```{r}
+AmesHouesingDataFrameLotFrontage = filter(AmesHouesingDataFrame, LotFrontage > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameLotFrontage$LotFrontage, xlab='Linear feet of street connected to property', main='Histogram of linear feet of street connected to property')
+
+# Box plot
+boxplot(AmesHouesingDataFrameLotFrontage$LotFrontage, xlab = "Connected Street Length", ylab = "Linear feet of street connected to property", main = "Boxplot of linear feet of street connected to property")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameLotFrontage$LotFrontage, pch = 1, frame = FALSE, main = "Q-Q Plot for linear feet of street connected to property", ylab = "Linear feet of street connected to property")
+qqline(AmesHouesingDataFrameLotFrontage$LotFrontage, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameLotFrontage$LogLotFrontage, xlab='Street connected to property in log(feet)', main='Histogram of log street connected to property')
+
+# Box plot
+boxplot(AmesHouesingDataFrameLotFrontage$LogLotFrontage, xlab = "Connected Street Length", ylab = "Street connected to property in log(feet)", main = "Boxplot of street connected to property")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameLotFrontage$LogLotFrontage, pch = 1, frame = FALSE, main = "Q-Q Plot for street connected to property", ylab = "Street connected to property in log(feet)")
+qqline(AmesHouesingDataFrameLotFrontage$LogLotFrontage, col = "steelblue", lwd = 2)
+
+AmesHouesingDataFrameLotFrontage %>% ggplot(aes(x = LogLotFrontage, y = LogSalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="log(Connected Street Length) vs log(sales price) in Ames Iowa")
+
+fit = lm(LogSalePrice~LogLotFrontage, data = AmesHouesingDataFrameLotFrontage)
+summary(fit)
+```

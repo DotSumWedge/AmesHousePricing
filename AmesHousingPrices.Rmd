@@ -27,6 +27,7 @@ library(gridExtra)
 
 #AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
 
+#AmesHouesingDataFrame <- read.csv("C:/Users/nicol/OneDrive/Desktop/train1.csv")
 ```
 
 ```{r}
@@ -39,17 +40,16 @@ miss_var_summary(AmesHouesingDataFrame)
 ```{r}
 AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
 
-# Add 1 to all deck/porch square footage so a log transformation works (log(1) = 0)
-AmesHouesingDataFrame$WoodDeckSF = AmesHouesingDataFrame$WoodDeckSF + 1
-AmesHouesingDataFrame$OpenPorchSF = AmesHouesingDataFrame$OpenPorchSF + 1
-AmesHouesingDataFrame$X3SsnPorch = AmesHouesingDataFrame$X3SsnPorch + 1
-AmesHouesingDataFrame$ScreenPorch = AmesHouesingDataFrame$ScreenPorch + 1
-
 # Create log transformation column for the various porch square foot columns
-AmesHouesingDataFrame$LogWoodDeckSF = log(AmesHouesingDataFrame$WoodDeckSF)
-AmesHouesingDataFrame$LogOpenPorchSF = log(AmesHouesingDataFrame$OpenPorchSF)
-AmesHouesingDataFrame$LogX3SsnPorch = log(AmesHouesingDataFrame$X3SsnPorch)
-AmesHouesingDataFrame$LogScreenPorch = log(AmesHouesingDataFrame$ScreenPorch)
+AmesHouesingDataFrame$LogWoodDeckSF = log(AmesHouesingDataFrame$WoodDeckSF + 1)
+AmesHouesingDataFrame$LogOpenPorchSF = log(AmesHouesingDataFrame$OpenPorchSF + 1)
+AmesHouesingDataFrame$LogX3SsnPorch = log(AmesHouesingDataFrame$X3SsnPorch + 1)
+AmesHouesingDataFrame$LogScreenPorch = log(AmesHouesingDataFrame$ScreenPorch + 1)
+
+AmesHouesingDataFrame$LogLotArea = log(AmesHouesingDataFrame$LotArea + 1)
+AmesHouesingDataFrame$LogLotFrontage = log(AmesHouesingDataFrame$LotFrontage + 1)
+
+AmesHouesingDataFrame$LogPoolArea = log(AmesHouesingDataFrame$PoolArea + 1)
 
 AmesHouesingDataFrame
 ```

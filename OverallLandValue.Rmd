@@ -29,5 +29,38 @@ AmesHouesingDataFrame
 ```
 
 ```{r}
+#Both pool aread and the log of pool area don't have a significant p value. There are also very few observations
 
+AmesHouesingDataFrameLotArea = filter(AmesHouesingDataFrame, LotArea > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameLotArea$LotArea, xlab='Lot Area (Feet^2)', main='Histogram of Lot Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameLotArea$LotArea, xlab = "Lot Area", ylab = "Lot Area in log(feet^2)", main = "Boxplot of Lot Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameLotArea$LotArea, pch = 1, frame = FALSE, main = "Q-Q Plot for Lot Area", ylab = "Lot Area in log(feet^2)")
+qqline(AmesHouesingDataFrameLotArea$LotArea, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameLotArea$LogLotArea, xlab='Lot Area in log(feet^2)', main='Histogram of log Lot Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameLotArea$LogLotArea, xlab = "Lot Area", ylab = "Lot Area in log(feet^2)", main = "Boxplot of Log Lot Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameLotArea$LogLotArea, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Lot Area", ylab = "Lot Area in log(feet^2)")
+qqline(AmesHouesingDataFrameLotArea$LogLotArea, col = "steelblue", lwd = 2)
+
+AmesHouesingDataFrameLotArea %>% ggplot(aes(x = LotArea, y = SalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="Lot Area in Feet^2 vs sales price in Ames Iowa")
+
+AmesHouesingDataFrameLotArea %>% ggplot(aes(x = LogLotArea, y = LogSalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="log(Lot Area in Feet^2) vs log(sales price) in Ames Iowa")
+
+fit = lm(LogSalePrice~LogLotArea, data = AmesHouesingDataFrameLotArea)
+summary(fit)
 ```

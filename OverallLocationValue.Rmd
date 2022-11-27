@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 # Feature engineer an overall location value from the columns:
 #    MSZoning
-#    LotFrontage - integer
+#    LotFrontage - requires log transformation
 #    Street
 #    Alley
 #    Neighborhood
@@ -22,9 +22,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
-AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
 
-# Create log transformation column for the various porch square foot columns
+AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
 AmesHouesingDataFrame$LogLotFrontage = log(AmesHouesingDataFrame$LotFrontage + 1)
 
 AmesHouesingDataFrame

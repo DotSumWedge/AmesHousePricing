@@ -11,15 +11,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 # Feature engineer an overall pool value from the columns:
-#    PoolArea - integer
+#    PoolArea - requires log transformation but has insignificant p value
 #    PoolQC
 ```
 
 ```{r}
 AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
-AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
 
-# Create log transformation column for the various porch square foot columns
+AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
 AmesHouesingDataFrame$LogPoolArea = log(AmesHouesingDataFrame$PoolArea + 1)
 
 AmesHouesingDataFrame

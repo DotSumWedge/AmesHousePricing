@@ -1,0 +1,64 @@
+---
+title: "OverallPoolValue"
+author: "DerekRogers"
+date: "2022-11-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Feature engineer an overall pool value from the columns:
+#    PoolArea - integer
+#    PoolQC
+```
+
+```{r}
+AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
+
+# Add 1 to all deck/porch square footage so a log transformation works (log(1) = 0)
+AmesHouesingDataFrame$PoolArea = AmesHouesingDataFrame$PoolArea + 1
+
+# Create log transformation column for the various porch square foot columns
+AmesHouesingDataFrame$LogPoolArea = log(AmesHouesingDataFrame$PoolArea)
+
+AmesHouesingDataFrame
+```
+
+```{r}
+#Both pool aread and the log of pool area don't have a significant p value. There are also very few observations
+
+AmesHouesingDataFramePoolArea = filter(AmesHouesingDataFrame, PoolArea > 1)
+
+# Histogram
+hist(AmesHouesingDataFramePoolArea$PoolArea, xlab='Pool Area (Feet^2)', main='Histogram of Pool Area')
+
+# Box plot
+boxplot(AmesHouesingDataFramePoolArea$PoolArea, xlab = "Pool Area (Feet^2)", ylab = "Pool Area in log(feet^2)", main = "Boxplot of Pool Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFramePoolArea$PoolArea, pch = 1, frame = FALSE, main = "Q-Q Plot for Pool Area", ylab = "Pool Area in log(feet^2)")
+qqline(AmesHouesingDataFramePoolArea$PoolArea, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFramePoolArea$LogPoolArea, xlab='Pool Area in log(feet^2)', main='Histogram of log Pool Area')
+
+# Box plot
+boxplot(AmesHouesingDataFramePoolArea$LogPoolArea, xlab = "Pool Area log(Feet^2)", ylab = "Pool Area in log(feet^2)", main = "Boxplot of Log Pool Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFramePoolArea$LogPoolArea, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Pool Area", ylab = "Pool Area in log(feet^2)")
+qqline(AmesHouesingDataFramePoolArea$LogPoolArea, col = "steelblue", lwd = 2)
+
+AmesHouesingDataFramePoolArea %>% ggplot(aes(x = LogPoolArea, y = LogSalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="log(Pool Area in Feet^2) vs log(sales price) in Ames Iowa")
+
+fit = lm(LogSalePrice~PoolArea, data = AmesHouesingDataFramePoolArea)
+summary(fit)
+fit = lm(LogSalePrice~LogPoolArea, data = AmesHouesingDataFramePoolArea)
+summary(fit)
+```

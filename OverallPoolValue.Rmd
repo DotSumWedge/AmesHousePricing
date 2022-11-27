@@ -26,7 +26,7 @@ AmesHouesingDataFrame
 ```
 
 ```{r}
-#Both pool aread and the log of pool area don't have a significant p value. There are also very few observations
+#Both pool area and the log of pool area don't have a significant p value. There are also very few observations
 
 AmesHouesingDataFramePoolArea = filter(AmesHouesingDataFrame, PoolArea > 1)
 

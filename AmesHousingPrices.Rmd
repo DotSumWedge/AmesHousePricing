@@ -25,7 +25,7 @@ library(gridExtra)
 ```{r}
 #AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
 
-#AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
+AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
 
 ```
 
@@ -313,5 +313,54 @@ plot4 <- AmesHouesingDataFrame %>%
 # and plot them on a single pane. 
 grid.arrange(plot1, plot2, plot3, plot4)
 
+
+```
+
+
+
+Numerical Encoding so that we can explore correlation for LAND VAR
+```{r}
+AmesHouesingDataFrame$LotShapeNum <- as.numeric(factor(AmesHouesingDataFrame$LotShape,
+                                                        levels = c("Reg", "IR1", "IR2", "IR3"),
+                                                        labels = c(4,3,2,1), ordered = TRUE))
+
+AmesHouesingDataFrame$LandContourNum <- as.numeric(factor(AmesHouesingDataFrame$LandContour,
+                                                        levels = c("Lvl", "Bnk", "HLS", "Low"),
+                                                        labels = c(4,3,2,1), ordered = TRUE))
+
+AmesHouesingDataFrame$LotConfigNum <- as.numeric(factor(AmesHouesingDataFrame$LotConfig,
+                                                         levels = c("Inside",
+                                                                    "Corner",
+                                                                    "CulDSac","FR2",
+                                                                    "FR3"),
+                                                         labels = c(5,4,3,2,1), ordered = TRUE))
+
+AmesHouesingDataFrame$LandSlopeNum <- as.numeric(factor(AmesHouesingDataFrame$LandSlope,
+                                                     levels = c("Gtl", "Mod", "Sev"),
+                                                     labels = c(3,2,1),
+                                                     ordered = TRUE))
+
+```
+
+
+
+
+setting up the correlation plot for creating mega variables
+```{r}
+# selecting var for exploration:
+pool_corr <- c("SalePrice", "LotArea", "LotShapeNum",
+               "LandContourNum", "LotConfigNum", "LandSlopeNum")
+
+# getting the rows for each of the vars to be explored:
+pool_df <- AmesHouesingDataFrame[, pool_corr]
+pool_df <- cor(pool_df)
+glimpse(pool_df)
+# plotting corr plot with ggcorrplot
+ggcorrplot(corr = pool_df, lab = TRUE, lab_size = 3,
+           colors = c("#6D9EC1", "white", "#E46726")) +
+  labs(title = "Correlation Between Sales Price and Lot Features", 
+       subtitle = "Netural and Positive Correlation") +
+  theme(plot.title = element_text(hjust = .5),
+        plot.subtitle = element_text(hjust = .5))
 
 ```

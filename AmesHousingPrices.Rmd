@@ -51,6 +51,7 @@ AmesHouesingDataFrame$LogLotFrontage = log(AmesHouesingDataFrame$LotFrontage + 1
 
 AmesHouesingDataFrame$LogPoolArea = log(AmesHouesingDataFrame$PoolArea + 1)
 
+
 AmesHouesingDataFrame
 ```
 
@@ -348,7 +349,7 @@ AmesHouesingDataFrame$LandSlopeNum <- as.numeric(factor(AmesHouesingDataFrame$La
 setting up the correlation plot for creating mega variables
 ```{r}
 # selecting var for exploration:
-pool_corr <- c("SalePrice", "LotArea", "LotShapeNum",
+pool_corr <- c("LogSalePrice", "LogLotArea", "LotShapeNum",
                "LandContourNum", "LotConfigNum", "LandSlopeNum")
 
 # getting the rows for each of the vars to be explored:

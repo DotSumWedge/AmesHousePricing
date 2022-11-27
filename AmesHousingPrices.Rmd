@@ -10,16 +10,22 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+#install.packages("plyr")
+#install.packages("ggcorrplot")
+#install.packages("gridExtra")
 library(naniar)
 library(tidyverse)
 library(ggplot2)
+library(plyr)
+library(ggcorrplot)
+library(gridExtra)
+
 ```
 
 ```{r}
 #AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
 
 #AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
-#plot_missing(AmesHouesingDataFrame[,1-15])
 
 ```
 
@@ -53,8 +59,6 @@ AmesHouesingDataFrame
 apply(AmesHouesingDataFrame, 2, function(x) length(unique(x)))
 ncol(AmesHouesingDataFrame)
 ```
-
-<<<<<<< HEAD
 
 The data contain many NA values. These NA values are not necessarily missing data, but can be thought of as
 a missing feature of certain homes. 
@@ -132,6 +136,7 @@ AmesHouesingDataFrame$MasVnrType <- as.character(AmesHouesingDataFrame$MasVnrTyp
 AmesHouesingDataFrame$MasVnrType[is.na(AmesHouesingDataFrame$MasVnrType)] <- "None"
 AmesHouesingDataFrame$MasVnrType <- as.factor(AmesHouesingDataFrame$MasVnrType)
 ```
+  
                                               
 ```{r}
 # Histogram that shows a right skewed normal distribution
@@ -169,12 +174,144 @@ AmesHouesingDataFrame %>% ggplot(aes(x = GrLivArea, y = LogSalePrice, color = Ho
 ```{r}
 fit = lm(LogSalePrice~GrLivArea, data = AmesHouesingDataFrame)
 summary(fit)
+
+Outliers = AmesHouesingDataFrame[order(-AmesHouesingDataFrame$GrLivArea),]
+Outliers = Outliers[1:2,]
+Outliers
 ```
 
+viewing the distribution, and price for var such as zoning, building type etc. 
 ```{r}
+# bar plot of distribution of Zoning Class:
+AmesHouesingDataFrame %>%
+  ggplot(aes(x = MSZoning, fill = MSZoning)) + 
+  geom_bar(show.legend = FALSE, color = "black") +
+  ggtitle("Distribution of Zoning Classification") + xlab('MS Zoning Class') +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  geom_text(stat='count', aes(label=..count..),vjust=-0.25) # adds num to bar
+
+# viewing price and how it looks in each category of zoning class:
+AmesHouesingDataFrame %>% ggplot(aes(MSZoning, SalePrice, fill = MSZoning)) +
+  geom_boxplot() + 
+  theme(legend.position = "none") +
+  ggtitle("Box Plot of Sales Price by Zone Class") + xlab('MS Zoning Class') +
+  theme(plot.title = element_text(hjust = .5))
+
+# view the sizes of home within each of these classes to understand the price
+# dist. within each class:
+AmesHouesingDataFrame %>% select(MSZoning, GrLivArea) %>%
+  ggplot(aes(MSZoning,GrLivArea,fill = MSZoning)) +
+  geom_boxplot(show.legend = FALSE) +
+  ggtitle("Box Plot of Living Areas for each Zone Class") +
+  ylab("Living Area in Square Feet") + xlab("MS Zoning Class") +
+  theme(plot.title = element_text(hjust = .5))
+
+# split DF, apply function, and return results in DF:
+# here we are displaying the breakdown of mean size for each of the 
+# zone classes:
+ddply(.data = AmesHouesingDataFrame,
+      .variables = 'MSZoning',
+      .fun = summarize, size = mean(GrLivArea))
+
+# viewing Dist of SalePrice filled with BuildingType (BldgType)
+AmesHouesingDataFrame %>% ggplot(aes(SalePrice, fill = BldgType)) + 
+  geom_histogram(position = position_stack(reverse = TRUE),alpha = .6, color = "black") + 
+  ggtitle('Distribution of Sale Price With Color Represenation for BldgType') +
+  theme(plot.title = element_text(hjust=.5))
+  
+
+# We will use similar process to view building type with Min/Max/Mean price:
+ddply(AmesHouesingDataFrame, "BldgType", summarize, Total = length(BldgType),
+      MaxPrice = max(SalePrice), MinPrice = min(SalePrice), MeanPrice = mean(SalePrice))
+
+
+# now overall Quality and it's Price :
+AmesHouesingDataFrame %>% ggplot(aes(SalePrice, fill = as.factor(OverallQual))) +
+  geom_histogram(position = "stack",color= "black", alpha=.8) + 
+  xlab("Sale Price") + scale_fill_discrete(name = "Overall Quality") +
+  ggtitle("Sale Price Distribution When Catogorized by Overall Quality")
 
 ```
 
+
+
+
+Numerical Encoding so that we can explore correlation:
 ```{r}
+AmesHouesingDataFrame$ExterCondNum <- as.numeric(factor(AmesHouesingDataFrame$ExterCond,
+                                                        levels = c("Ex", "Fa", "Gd", "TA", "Po"),
+                                                        labels = c(5,2,4,3,1), ordered = TRUE))
+AmesHouesingDataFrame$HeatingQCNum <- as.numeric(factor(AmesHouesingDataFrame$HeatingQC,
+                                                        levels = c("Ex", "Fa", "Gd", "TA", "Po"),
+                                                        labels = c(5,2,4,3,1), ordered = TRUE))
+AmesHouesingDataFrame$CentralAirNum <- as.numeric(factor(AmesHouesingDataFrame$CentralAir,
+                                                         levels = c("N", "Y"),
+                                                         labels = c(0,1), ordered = TRUE))
+
+```
+
+
+setting up the correlation plot
+```{r}
+# selecting var for exploration:
+corr_vars <- c("SalePrice", "OverallQual", "OverallCond", "YearBuilt",
+               "ExterCondNum", "TotalBsmtSF", "HeatingQCNum","CentralAirNum",
+               "GrLivArea", "BedroomAbvGr", "KitchenAbvGr", "TotRmsAbvGrd",
+               "Fireplaces", "GarageArea", "OpenPorchSF", "PoolArea",
+               "YrSold")
+# getting the rows for each of the vars to be explored:
+corr_df <- AmesHouesingDataFrame[, corr_vars]
+corr_df <- cor(corr_df)
+
+# plotting corr plot with ggcorrplot
+ggcorrplot(corr = corr_df, lab = TRUE, lab_size = 3,
+           colors = c("#6D9EC1", "white", "#E46726")) +
+  labs(title = "Correlation Between Variables and Attrition", 
+       subtitle = "Netural and Positive Correlation") +
+  theme(plot.title = element_text(hjust = .5),
+        plot.subtitle = element_text(hjust = .5))
+
+```
+
+
+using gridExtra to visualize multiple relationships
+```{r}
+
+# Sale price - TotalBsmtSF Scatterplot
+plot1 <- AmesHouesingDataFrame %>%
+  ggplot(aes(TotalBsmtSF, SalePrice)) + 
+  geom_point(alpha = .8, color = "blue") +  
+  geom_smooth(method=lm , color="black", se=FALSE)+
+  ggtitle("Scatter plot of SalePrice and TotalBsmtSF") +
+  theme(plot.title = element_text(hjust = 0.4))
+
+# Sale price - GarageArea Scatterplot
+plot2 <- AmesHouesingDataFrame %>% 
+  ggplot(aes(GarageArea, SalePrice)) + 
+  geom_point(alpha = .8, color = "blue") +  
+  geom_smooth(method=lm , color="black", se=FALSE)+
+  ggtitle("Scatter plot of SalePrice and GarageArea") +
+  theme(plot.title = element_text(hjust = 0.4))
+
+# Sale price - GrLiveArea Scatterplot
+plot3 <- AmesHouesingDataFrame %>%
+  ggplot(aes(GrLivArea, SalePrice)) + 
+  geom_point(alpha = .8, color = "blue") +  
+  geom_smooth(method=lm , color="black", se=FALSE)+
+  ggtitle("Scatter plot of SalePrice and GrLivArea") +
+  theme(plot.title = element_text(hjust = 0.4))
+
+# Sale price - TotRmsAbvGrd Scatterplot
+plot4 <- AmesHouesingDataFrame %>%
+  ggplot(aes(TotRmsAbvGrd, SalePrice)) + 
+  geom_point(alpha = .8, color = "blue") +  
+  geom_smooth(method=lm , color="black", se=FALSE)+
+  ggtitle("Scatter plot of SalePrice and TotRmsAbvGrd") +
+  theme(plot.title = element_text(hjust = 0.4))
+
+# using gridExtra this allows us to pass each plot in grid.arrange
+# and plot them on a single pane. 
+grid.arrange(plot1, plot2, plot3, plot4)
+
 
 ```

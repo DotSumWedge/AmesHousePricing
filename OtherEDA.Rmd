@@ -1,0 +1,68 @@
+---
+title: "OtherEDA"
+author: "Derek Rogers"
+date: "2022-11-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Feature engineer from the columns:
+#    MSSubClass
+#    Utilities
+#    Electrical
+#    PavedDrive
+#    Fence
+#    MiscFeature
+#    MiscVal
+#    LowQualFinSF - Doesn't meet normality assumptions. Additional feature engineering is required to make this column useful
+```
+
+```{r}
+AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+
+AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
+AmesHouesingDataFrame$LogLowQualFinSF = log(AmesHouesingDataFrame$LowQualFinSF + 1)
+
+AmesHouesingDataFrame
+```
+
+```{r}
+#Low quality finished area doesn't meet normality assumptions
+
+AmesHouesingDataFrameLowQualFinSF = filter(AmesHouesingDataFrame, LowQualFinSF > 1)
+
+# HistogramAmesHouesingDataFrameMasVnrArea
+hist(AmesHouesingDataFrameLowQualFinSF$LowQualFinSF, xlab='Low Quality Finished Area (Feet^2)', main='Histogram ofLow Quality Finished Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameLowQualFinSF$LowQualFinSF, xlab = "Low Quality Finished Area", ylab = "Low Quality Finished Area in log(feet^2)", main = "Boxplot of Low Quality Finished Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameLowQualFinSF$LowQualFinSF, pch = 1, frame = FALSE, main = "Q-Q Plot for Low Quality Finished Area", ylab = "Low Quality Finished Area in log(feet^2)")
+qqline(AmesHouesingDataFrameLowQualFinSF$LowQualFinSF, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameLowQualFinSF$LogLowQualFinSF, xlab='Low Quality Finished Area in log(feet^2)', main='Histogram of log Low Quality Finished Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameLowQualFinSF$LogLowQualFinSF, xlab = "Low Quality Finished Area", ylab = "Low Quality Finished Area in log(feet^2)", main = "Boxplot of Log Low Quality Finished Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameLowQualFinSF$LogLowQualFinSF, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Low Quality Finished Area", ylab = "Low Quality Finished Area in log(feet^2)")
+qqline(AmesHouesingDataFrameLowQualFinSF$LogLowQualFinSF, col = "steelblue", lwd = 2)
+
+AmesHouesingDataFrameLowQualFinSF %>% ggplot(aes(x = LowQualFinSF, y = SalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="Low Quality Finished Area in Feet^2 vs sales price in Ames Iowa")
+
+AmesHouesingDataFrameLowQualFinSF %>% ggplot(aes(x = LogLowQualFinSF, y = LogSalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="log(Low Quality Finished Area in Feet^2) vs log(sales price) in Ames Iowa")
+
+fit = lm(LogSalePrice~LogLowQualFinSF, data = AmesHouesingDataFrameLowQualFinSF)
+summary(fit)
+```

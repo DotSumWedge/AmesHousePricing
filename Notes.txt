@@ -125,7 +125,7 @@ Columns that might need a log transformation:
     TotalBsmtSF - Yes
     X1stFlrSF - Yes
     X2ndFlrSF - Yes
-    LowQualFinSF - 
+    LowQualFinSF - Doesn't meet assumptions either way
     GrLivArea - Yes
     GarageArea - Yes
     WoodDeckSF - Yes

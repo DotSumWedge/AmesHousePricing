@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #    Exterior1st
 #    Exterior2nd
 #    MasVnrType
-#    MasVnrArea
+#    MasVnrArea - requires log transformation
 #    ExterQual
 #    ExterCond
 ```
@@ -26,15 +26,15 @@ AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalF
 AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
 AmesHouesingDataFrame$LogMasVnrArea = log(AmesHouesingDataFrame$MasVnrArea + 1)
 
-AmesHouesingDataFrame$MasVnrArea
+AmesHouesingDataFrame
 ```
 
 ```{r}
 #Masonry Veneer area is heavily right skewed which is corrected in the log translation
-drop_na(AmesHouesingDataFrame)
 AmesHouesingDataFrameMasVnrArea = filter(AmesHouesingDataFrame, MasVnrArea > 1)
+AmesHouesingDataFrameMasVnrArea
 
-# Histogram
+# HistogramAmesHouesingDataFrameMasVnrArea
 hist(AmesHouesingDataFrameMasVnrArea$MasVnrArea, xlab='Masonry Veneer Area (Feet^2)', main='Histogram of Masonry Veneer Area')
 
 # Box plot

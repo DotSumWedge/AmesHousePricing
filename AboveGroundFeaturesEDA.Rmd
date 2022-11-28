@@ -1,0 +1,146 @@
+---
+title: "AboveGroundFeaturesEDA"
+author: "Derek Rogers"
+date: "2022-11-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Feature engineer an overall above ground features value from the columns:
+#    X1stFlrSF - requires log transformation
+#    X2ndFlrSF - requires log transformation
+#    GrLivArea - requires log transformation
+#    FullBath
+#    HalfBath
+#    Bedroom
+#    Kitchen
+#    KitchenQual
+#    TotRmsAbvGrd
+#    Functional
+#    Fireplaces
+#    FireplaceQu
+```
+
+```{r}
+library(tidyverse)
+AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+
+AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
+AmesHouesingDataFrame$LogX1stFlrSF = log(AmesHouesingDataFrame$X1stFlrSF + 1)
+AmesHouesingDataFrame$LogX2ndFlrSF = log(AmesHouesingDataFrame$X2ndFlrSF + 1)
+AmesHouesingDataFrame$LogGrLivArea = log(AmesHouesingDataFrame$GrLivArea + 1)
+
+AmesHouesingDataFrame
+```
+
+```{r}
+# First floor area is right skewed which is corrected in the log translation
+AmesHouesingDataFrameX1stFlrSF = filter(AmesHouesingDataFrame, X1stFlrSF > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameX1stFlrSF$X1stFlrSF, xlab='First Floor Area (Feet^2)', main='Histogram of First Floor Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameX1stFlrSF$X1stFlrSF, xlab = "First Floor Area", ylab = "First Floor Area in log(feet^2)", main = "Boxplot of First Floor Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameX1stFlrSF$X1stFlrSF, pch = 1, frame = FALSE, main = "Q-Q Plot for First Floor Area", ylab = "First Floor Area in log(feet^2)")
+qqline(AmesHouesingDataFrameX1stFlrSF$X1stFlrSF, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameX1stFlrSF$LogX1stFlrSF, xlab='First Floor Area in log(feet^2)', main='Histogram of log First Floor Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameX1stFlrSF$LogX1stFlrSF, xlab = "First Floor Area", ylab = "First Floor Area in log(feet^2)", main = "Boxplot of Log First Floor Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameX1stFlrSF$LogX1stFlrSF, pch = 1, frame = FALSE, main = "Q-Q Plot for Log First Floor Area", ylab = "First Floor Area in log(feet^2)")
+qqline(AmesHouesingDataFrameX1stFlrSF$LogX1stFlrSF, col = "steelblue", lwd = 2)
+
+AmesHouesingDataFrameX1stFlrSF %>% ggplot(aes(x = X1stFlrSF, y = SalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="First Floor Area in Feet^2 vs sales price in Ames Iowa")
+
+AmesHouesingDataFrameX1stFlrSF %>% ggplot(aes(x = LogX1stFlrSF, y = LogSalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="log(First Floor Area in Feet^2) vs log(sales price) in Ames Iowa")
+
+fit = lm(LogSalePrice~LogX1stFlrSF, data = AmesHouesingDataFrameX1stFlrSF)
+summary(fit)
+```
+
+```{r}
+# Second floor area is right skewed which is corrected in the log translation
+AmesHouesingDataFrameX2ndFlrSF = filter(AmesHouesingDataFrame, X2ndFlrSF > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameX2ndFlrSF$X2ndFlrSF, xlab='Second Floor Area (Feet^2)', main='Histogram of Second Floor Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameX2ndFlrSF$X2ndFlrSF, xlab = "Second Floor Area", ylab = "Second Floor Area in log(feet^2)", main = "Boxplot of Second Floor Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameX2ndFlrSF$X2ndFlrSF, pch = 1, frame = FALSE, main = "Q-Q Plot for Second Floor Area", ylab = "Second Floor Area in log(feet^2)")
+qqline(AmesHouesingDataFrameX2ndFlrSF$X2ndFlrSF, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameX2ndFlrSF$LogX2ndFlrSF, xlab='Second Floor Area in log(feet^2)', main='Histogram of log Second Floor Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameX2ndFlrSF$LogX2ndFlrSF, xlab = "Second Floor Area", ylab = "Second Floor Area in log(feet^2)", main = "Boxplot of Log Second Floor Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameX2ndFlrSF$LogX2ndFlrSF, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Second Floor Area", ylab = "Second Floor Area in log(feet^2)")
+qqline(AmesHouesingDataFrameX2ndFlrSF$LogX2ndFlrSF, col = "steelblue", lwd = 2)
+
+AmesHouesingDataFrameX2ndFlrSF %>% ggplot(aes(x = X2ndFlrSF, y = SalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="Second Floor Area in Feet^2 vs sales price in Ames Iowa")
+
+AmesHouesingDataFrameX2ndFlrSF %>% ggplot(aes(x = LogX2ndFlrSF, y = LogSalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="log(Second Floor Area in Feet^2) vs log(sales price) in Ames Iowa")
+
+fit = lm(LogSalePrice~LogX2ndFlrSF, data = AmesHouesingDataFrameX2ndFlrSF)
+summary(fit)
+```
+
+```{r}
+# Ground living area is right skewed which is corrected in the log translation
+AmesHouesingDataFrameGrLivArea = filter(AmesHouesingDataFrame, GrLivArea > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameGrLivArea$GrLivArea, xlab='Ground Living Area (Feet^2)', main='Histogram of Ground Living Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameGrLivArea$GrLivArea, xlab = "Ground Living Area", ylab = "Ground Living Area in log(feet^2)", main = "Boxplot of Ground Living Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameGrLivArea$GrLivArea, pch = 1, frame = FALSE, main = "Q-Q Plot for Ground Living Area", ylab = "Ground Living Area in log(feet^2)")
+qqline(AmesHouesingDataFrameGrLivArea$GrLivArea, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameGrLivArea$LogGrLivArea, xlab='Ground Living Area in log(feet^2)', main='Histogram of log Ground Living Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameGrLivArea$LogGrLivArea, xlab = "Ground Living Area", ylab = "Ground Living Area in log(feet^2)", main = "Boxplot of Log Ground Living Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameGrLivArea$LogGrLivArea, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Ground Living Area", ylab = "Ground Living Area in log(feet^2)")
+qqline(AmesHouesingDataFrameGrLivArea$LogGrLivArea, col = "steelblue", lwd = 2)
+
+AmesHouesingDataFrameGrLivArea %>% ggplot(aes(x = GrLivArea, y = SalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="Ground Living Area in Feet^2 vs sales price in Ames Iowa")
+
+AmesHouesingDataFrameGrLivArea %>% ggplot(aes(x = LogGrLivArea, y = LogSalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="log(Ground Living Area in Feet^2) vs log(sales price) in Ames Iowa")
+
+fit = lm(LogSalePrice~LogGrLivArea, data = AmesHouesingDataFrameGrLivArea)
+summary(fit)
+```

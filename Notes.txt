@@ -67,7 +67,6 @@ TemperatureControlValue:
 HouseFeatureValue:
     X1stFlrSF
     X2ndFlrSF
-    LowQualFinSF
     GrLivArea
     FullBath
     HalfBath
@@ -107,6 +106,7 @@ Other: Not sure what categories these belong to
     Fence
     MiscFeature
     MiscVal
+    LowQualFinSF
 
 Columns that need to be converted from an int to a factor:
     MSSubClass
@@ -123,10 +123,10 @@ Columns that might need a log transformation:
     BsmtFinSF2 - 
     BsmtUnfSF - 
     TotalBsmtSF - 
-    X1stFlrSF - 
-    X2ndFlrSF - 
+    X1stFlrSF - Yes
+    X2ndFlrSF - Yes
     LowQualFinSF - 
-    GrLivArea - 
+    GrLivArea - Yes
     GarageArea - Yes
     WoodDeckSF - Yes
     OpenPorchSF - Yes

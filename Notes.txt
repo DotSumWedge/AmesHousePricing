@@ -111,9 +111,6 @@ Other: Not sure what categories these belong to
 Columns that need to be converted from an int to a factor:
     MSSubClass
 
-Columns that will likely need a log transformation:
-
-
 Columns that might need a log transformation:
     SalePrice - Yes
     LotArea - Yes
@@ -121,7 +118,7 @@ Columns that might need a log transformation:
     MasVnrArea - Yes
     BsmtFinSF1 - Needs additional feature engineering
     BsmtFinSF2 - Needs additional feature engineering
-    BsmtUnfSF - Yes but assumptions are shakey
+    BsmtUnfSF - Yes but assumptions are shaky
     TotalBsmtSF - Yes
     X1stFlrSF - Yes
     X2ndFlrSF - Yes

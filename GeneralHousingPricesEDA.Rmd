@@ -28,6 +28,7 @@ AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHouseP
 
 ```{r}
 # Perform log transformations on columns that require it which was determined from the various *EDA.Rmd files and listed in Notes.txt
+
 AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
 
 AmesHouesingDataFrame$LogX1stFlrSF = log(AmesHouesingDataFrame$X1stFlrSF + 1)
@@ -54,7 +55,8 @@ AmesHouesingDataFrame$LogMasVnrArea = log(AmesHouesingDataFrame$MasVnrArea + 1)
 
 ```{r}
 # The data contain many NA values. These NA values are not necessarily missing data, but can be thought of as
-# a missing feature of certain homes. 
+# a missing feature of certain homes.
+
 AmesHouesingDataFrame$Fence <- as.character(AmesHouesingDataFrame$Fence)
 AmesHouesingDataFrame$Fence[is.na(AmesHouesingDataFrame$Fence)] <- "None"
 AmesHouesingDataFrame$Fence <- as.factor(AmesHouesingDataFrame$Fence)
@@ -136,14 +138,14 @@ AmesHouesingDataFrame$MasVnrType <- as.factor(AmesHouesingDataFrame$MasVnrType)
 miss_var_summary(AmesHouesingDataFrame)
 ```
 
-
 ```{r}
 apply(AmesHouesingDataFrame, 2, function(x) length(unique(x)))
 ncol(AmesHouesingDataFrame)
 ```
-  
-                                              
+
 ```{r}
+# Check assumptions of normality for the housing prices column
+
 # Histogram that shows a right skewed normal distribution
 hist(AmesHouesingDataFrame$SalePrice, xlab='House Price (dollars)', main='Histogram of Housing Prices')
 
@@ -179,8 +181,9 @@ Outliers = Outliers[1:2,]
 Outliers
 ```
 
-viewing the distribution, and price for var such as zoning, building type etc. 
 ```{r}
+# viewing the distribution, and price for var such as zoning, building type etc. 
+
 # bar plot of distribution of Zoning Class:
 AmesHouesingDataFrame %>%
   ggplot(aes(x = MSZoning, fill = MSZoning)) + 
@@ -217,26 +220,21 @@ AmesHouesingDataFrame %>% ggplot(aes(SalePrice, fill = BldgType)) +
   geom_histogram(position = position_stack(reverse = TRUE),alpha = .6, color = "black") + 
   ggtitle('Distribution of Sale Price With Color Represenation for BldgType') +
   theme(plot.title = element_text(hjust=.5))
-  
 
 # We will use similar process to view building type with Min/Max/Mean price:
 ddply(AmesHouesingDataFrame, "BldgType", summarize, Total = length(BldgType),
       MaxPrice = max(SalePrice), MinPrice = min(SalePrice), MeanPrice = mean(SalePrice))
-
 
 # now overall Quality and it's Price :
 AmesHouesingDataFrame %>% ggplot(aes(SalePrice, fill = as.factor(OverallQual))) +
   geom_histogram(position = "stack",color= "black", alpha=.8) + 
   xlab("Sale Price") + scale_fill_discrete(name = "Overall Quality") +
   ggtitle("Sale Price Distribution When Catogorized by Overall Quality")
-
 ```
 
-
-
-
-Numerical Encoding so that we can explore correlation:
 ```{r}
+# Numerical Encoding so that we can explore correlation:
+
 AmesHouesingDataFrame$ExterCondNum <- as.numeric(factor(AmesHouesingDataFrame$ExterCond,
                                                         levels = c("Ex", "Fa", "Gd", "TA", "Po"),
                                                         labels = c(5,2,4,3,1), ordered = TRUE))
@@ -248,9 +246,9 @@ AmesHouesingDataFrame$CentralAirNum <- as.numeric(factor(AmesHouesingDataFrame$C
                                                          labels = c(0,1), ordered = TRUE))
 ```
 
-
-setting up the correlation plot
 ```{r}
+# setting up the correlation plot
+
 # selecting var for exploration:
 corr_vars <- c("SalePrice", "OverallQual", "OverallCond", "YearBuilt",
                "ExterCondNum", "TotalBsmtSF", "HeatingQCNum","CentralAirNum",
@@ -271,9 +269,8 @@ ggcorrplot(corr = corr_df, lab = TRUE, lab_size = 3,
 
 ```
 
-
-using gridExtra to visualize multiple relationships
 ```{r}
+# using gridExtra to visualize multiple relationships
 
 # Sale price - TotalBsmtSF Scatterplot
 plot1 <- AmesHouesingDataFrame %>%
@@ -310,13 +307,11 @@ plot4 <- AmesHouesingDataFrame %>%
 # using gridExtra this allows us to pass each plot in grid.arrange
 # and plot them on a single pane. 
 grid.arrange(plot1, plot2, plot3, plot4)
-
-
 ```
 
-
-Numerical Encoding so that we can explore correlation for LOT VAR
 ```{r}
+# Numerical Encoding so that we can explore correlation for LOT VAR
+
 AmesHouesingDataFrame$LotShapeNum <- as.numeric(factor(AmesHouesingDataFrame$LotShape,
                                                         levels = c("Reg", "IR1", "IR2", "IR3"),
                                                         labels = c(4,3,2,1), ordered = TRUE))
@@ -336,14 +331,11 @@ AmesHouesingDataFrame$LandSlopeNum <- as.numeric(factor(AmesHouesingDataFrame$La
                                                      levels = c("Gtl", "Mod", "Sev"),
                                                      labels = c(3,2,1),
                                                      ordered = TRUE))
-
 ```
 
-
-
-
-setting up the correlation plot for creating mega variables - LOT
 ```{r}
+# setting up the correlation plot for creating mega variables - LOT
+
 # selecting var for exploration:
 lot_corr <- c("LogSalePrice", "LogLotArea", "LotShapeNum",
                "LandContourNum", "LotConfigNum", "LandSlopeNum")
@@ -361,10 +353,6 @@ ggcorrplot(corr = lot_df, lab = TRUE, lab_size = 3,
         plot.subtitle = element_text(hjust = .5))
 
 ```
-
-
-
-
 
 setting up the correlation plot for creating mega variables - PORCH
 ```{r}

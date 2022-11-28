@@ -45,6 +45,9 @@ AmesHouesingDataFrame$LogX1stFlrSF = log(AmesHouesingDataFrame$X1stFlrSF + 1)
 AmesHouesingDataFrame$LogX2ndFlrSF = log(AmesHouesingDataFrame$X2ndFlrSF + 1)
 AmesHouesingDataFrame$LogGrLivArea = log(AmesHouesingDataFrame$GrLivArea + 1)
 
+AmesHouesingDataFrame$LogTotalBsmtSF = log(AmesHouesingDataFrame$TotalBsmtSF + 1)
+AmesHouesingDataFrame$LogBsmtUnfSF = log(AmesHouesingDataFrame$BsmtUnfSF + 1)
+
 AmesHouesingDataFrame$LogWoodDeckSF = log(AmesHouesingDataFrame$WoodDeckSF + 1)
 AmesHouesingDataFrame$LogOpenPorchSF = log(AmesHouesingDataFrame$OpenPorchSF + 1)
 AmesHouesingDataFrame$LogX3SsnPorch = log(AmesHouesingDataFrame$X3SsnPorch + 1)

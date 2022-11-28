@@ -119,10 +119,10 @@ Columns that might need a log transformation:
     LotArea - Yes
     LotFrontage - Yes
     MasVnrArea - Yes
-    BsmtFinSF1 - 
-    BsmtFinSF2 - 
-    BsmtUnfSF - 
-    TotalBsmtSF - 
+    BsmtFinSF1 - Needs additional feature engineering
+    BsmtFinSF2 - Needs additional feature engineering
+    BsmtUnfSF - Yes but assumptions are shakey
+    TotalBsmtSF - Yes
     X1stFlrSF - Yes
     X2ndFlrSF - Yes
     LowQualFinSF - 

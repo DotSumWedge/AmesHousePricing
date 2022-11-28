@@ -1,0 +1,111 @@
+---
+title: "BasementEDA"
+author: "Derek Rogers"
+date: "2022-11-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Feature engineer an overall above ground features value from the columns:
+#    TotalBsmtSF - requires log transformation
+#    BsmtQual
+#    BsmtCond
+#    BsmtExposure
+#    BsmtFinType1
+#    BsmtFinSF1 - integer, needs additional feature engineering
+#    BsmtFinType2
+#    BsmtFinSF2 - integer, needs additional feature engineering
+#    BsmtUnfSF - requires log transformation but still doesn't fit very well. Could use more work or leave this out of the prediction first
+#    BsmtFullBath
+#    BsmtHalfBath
+
+#TODO: Finish additional feature engineering for BsmtFinSF1/BsmtFinType1 and BsmtFinSF2/BsmtFinType2 columns
+```
+
+```{r}
+AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+
+AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
+AmesHouesingDataFrame$LogTotalBsmtSF = log(AmesHouesingDataFrame$TotalBsmtSF + 1)
+AmesHouesingDataFrame$LogBsmtFinSF1 = log(AmesHouesingDataFrame$BsmtFinSF1 + 1)
+AmesHouesingDataFrame$LogBsmtFinSF2 = log(AmesHouesingDataFrame$BsmtFinSF2 + 1)
+AmesHouesingDataFrame$LogBsmtUnfSF = log(AmesHouesingDataFrame$BsmtUnfSF + 1)
+
+AmesHouesingDataFrame
+```
+
+```{r}
+# Total Basment area is right skewed which is corrected in the log translation
+AmesHouesingDataFrameTotalBsmtSF = filter(AmesHouesingDataFrame, TotalBsmtSF > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameTotalBsmtSF$TotalBsmtSF, xlab='Total Basment Area (Feet^2)', main='Histogram of Total Basment Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameTotalBsmtSF$TotalBsmtSF, xlab = "Total Basment Area", ylab = "Total Basment Area in log(feet^2)", main = "Boxplot of Total Basment Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameTotalBsmtSF$TotalBsmtSF, pch = 1, frame = FALSE, main = "Q-Q Plot for Total Basment Area", ylab = "Total Basment Area in log(feet^2)")
+qqline(AmesHouesingDataFrameTotalBsmtSF$TotalBsmtSF, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameTotalBsmtSF$LogTotalBsmtSF, xlab='Total Basment Area in log(feet^2)', main='Histogram of log Total Basment Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameTotalBsmtSF$LogTotalBsmtSF, xlab = "Total Basment Area", ylab = "Total Basment Area in log(feet^2)", main = "Boxplot of Log Total Basment Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameTotalBsmtSF$LogTotalBsmtSF, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Total Basment Area", ylab = "Total Basment Area in log(feet^2)")
+qqline(AmesHouesingDataFrameTotalBsmtSF$LogTotalBsmtSF, col = "steelblue", lwd = 2)
+
+AmesHouesingDataFrameTotalBsmtSF %>% ggplot(aes(x = TotalBsmtSF, y = SalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="Total Basment Area in Feet^2 vs sales price in Ames Iowa")
+
+AmesHouesingDataFrameTotalBsmtSF %>% ggplot(aes(x = LogTotalBsmtSF, y = LogSalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="log(Total Basment Area in Feet^2) vs log(sales price) in Ames Iowa")
+
+fit = lm(LogSalePrice~LogTotalBsmtSF, data = AmesHouesingDataFrameTotalBsmtSF)
+summary(fit)
+```
+
+```{r}
+# Unfinished Basement area is right skewed which is corrected in the log translation
+AmesHouesingDataFrameBsmtUnfSF = filter(AmesHouesingDataFrame, BsmtUnfSF > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameBsmtUnfSF$BsmtUnfSF, xlab='Unfinished Basment Area (Feet^2)', main='Histogram of Unfinished Basment Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameBsmtUnfSF$BsmtUnfSF, xlab = "Unfinished Basment Area", ylab = "Unfinished Basment Area in log(feet^2)", main = "Boxplot of Unfinished Basment Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameBsmtUnfSF$BsmtUnfSF, pch = 1, frame = FALSE, main = "Q-Q Plot for Unfinished Basment Area", ylab = "Unfinished Basment Area in log(feet^2)")
+qqline(AmesHouesingDataFrameBsmtUnfSF$BsmtUnfSF, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameBsmtUnfSF$LogBsmtUnfSF, xlab='Unfinished Basment Area in log(feet^2)', main='Histogram of log Unfinished Basment Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameBsmtUnfSF$LogBsmtUnfSF, xlab = "Unfinished Basment Area", ylab = "Unfinished Basment Area in log(feet^2)", main = "Boxplot of Log Unfinished Basment Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameBsmtUnfSF$LogBsmtUnfSF, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Unfinished Basment Area", ylab = "Unfinished Basment Area in log(feet^2)")
+qqline(AmesHouesingDataFrameBsmtUnfSF$LogBsmtUnfSF, col = "steelblue", lwd = 2)
+
+AmesHouesingDataFrameBsmtUnfSF %>% ggplot(aes(x = BsmtUnfSF, y = SalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="Unfinished Basment Area in Feet^2 vs sales price in Ames Iowa")
+
+AmesHouesingDataFrameBsmtUnfSF %>% ggplot(aes(x = LogBsmtUnfSF, y = LogSalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="log(Unfinished Basment Area in Feet^2) vs log(sales price) in Ames Iowa")
+
+fit = lm(LogSalePrice~LogBsmtUnfSF, data = AmesHouesingDataFrameBsmtUnfSF)
+summary(fit)
+```

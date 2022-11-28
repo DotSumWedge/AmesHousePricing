@@ -1,7 +1,7 @@
 ---
-title: "AmesHousingPrices"
-author: "DerekRogers"
-date: "2022-11-25"
+title: "GeneralHousingPricesEDA"
+author: "Derek Rogers"
+date: "2022-11-28"
 output: html_document
 ---
 
@@ -10,16 +10,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-#install.packages("plyr")
-#install.packages("ggcorrplot")
-#install.packages("gridExtra")
 library(naniar)
 library(tidyverse)
 library(ggplot2)
 library(plyr)
 library(ggcorrplot)
 library(gridExtra)
-
 ```
 
 ```{r}
@@ -31,14 +27,7 @@ AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHouseP
 ```
 
 ```{r}
-# Many of these fields use Na purposefully to indicate that feature doesn't exist for that house according to the data descriptions
-  # but others say nothing in the data description about Na values 
-
-miss_var_summary(AmesHouesingDataFrame)
-```
-
-```{r}
-#Perform log transformations on columns that require it which was determined from the various *EDA.Rmd files and listed in Notes.txt
+# Perform log transformations on columns that require it which was determined from the various *EDA.Rmd files and listed in Notes.txt
 AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
 
 AmesHouesingDataFrame$LogX1stFlrSF = log(AmesHouesingDataFrame$X1stFlrSF + 1)
@@ -61,19 +50,11 @@ AmesHouesingDataFrame$LogPoolArea = log(AmesHouesingDataFrame$PoolArea + 1)
 AmesHouesingDataFrame$LogGarageArea = log(AmesHouesingDataFrame$GarageArea + 1)
 
 AmesHouesingDataFrame$LogMasVnrArea = log(AmesHouesingDataFrame$MasVnrArea + 1)
-
-AmesHouesingDataFrame
 ```
 
-
 ```{r}
-apply(AmesHouesingDataFrame, 2, function(x) length(unique(x)))
-ncol(AmesHouesingDataFrame)
-```
-
-The data contain many NA values. These NA values are not necessarily missing data, but can be thought of as
-a missing feature of certain homes. 
-```{r}
+# The data contain many NA values. These NA values are not necessarily missing data, but can be thought of as
+# a missing feature of certain homes. 
 AmesHouesingDataFrame$Fence <- as.character(AmesHouesingDataFrame$Fence)
 AmesHouesingDataFrame$Fence[is.na(AmesHouesingDataFrame$Fence)] <- "None"
 AmesHouesingDataFrame$Fence <- as.factor(AmesHouesingDataFrame$Fence)
@@ -147,6 +128,19 @@ AmesHouesingDataFrame$MasVnrType <- as.character(AmesHouesingDataFrame$MasVnrTyp
 AmesHouesingDataFrame$MasVnrType[is.na(AmesHouesingDataFrame$MasVnrType)] <- "None"
 AmesHouesingDataFrame$MasVnrType <- as.factor(AmesHouesingDataFrame$MasVnrType)
 ```
+
+```{r}
+# Many of these fields use Na purposefully to indicate that feature doesn't exist for that house according to the data descriptions
+  # but others say nothing in the data description about Na values 
+
+miss_var_summary(AmesHouesingDataFrame)
+```
+
+
+```{r}
+apply(AmesHouesingDataFrame, 2, function(x) length(unique(x)))
+ncol(AmesHouesingDataFrame)
+```
   
                                               
 ```{r}
@@ -159,9 +153,7 @@ boxplot(AmesHouesingDataFrame$SalePrice, xlab = "Houses", ylab = "House Price (d
 # QQ plot where the prices drift away from the identity line
 qqnorm(AmesHouesingDataFrame$SalePrice, pch = 1, frame = FALSE, main = "Q-Q Plot For Housing Prices", ylab = "House Price (dollars)")
 qqline(AmesHouesingDataFrame$SalePrice, col = "steelblue", lwd = 2)
-```
 
-```{r}
 # A log transformation of housing prices reduces the right skewness of the histogram and boxplot as well as keeps housing prices closer to the identity line in the QQ plot
 
 # Histogram
@@ -173,9 +165,7 @@ boxplot(AmesHouesingDataFrame$LogSalePrice, xlab = "Houses", ylab = "House Price
 # QQ plot
 qqnorm(AmesHouesingDataFrame$LogSalePrice, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Housing Prices", ylab = "House Price in log(dollars)")
 qqline(AmesHouesingDataFrame$LogSalePrice, col = "steelblue", lwd = 2)
-```
 
-```{r}
 # There are 2 extreme outliers for 2Story houses that are way below the prediction interval at the middle right of the graph
 AmesHouesingDataFrame %>% ggplot(aes(x = GrLivArea, y = LogSalePrice, color = HouseStyle)) + 
   geom_jitter() + geom_smooth(method = "lm") +
@@ -183,9 +173,7 @@ AmesHouesingDataFrame %>% ggplot(aes(x = GrLivArea, y = LogSalePrice, color = Ho
 ```
 
 ```{r}
-fit = lm(LogSalePrice~GrLivArea, data = AmesHouesingDataFrame)
-summary(fit)
-
+# 2 known outliers in the dataset
 Outliers = AmesHouesingDataFrame[order(-AmesHouesingDataFrame$GrLivArea),]
 Outliers = Outliers[1:2,]
 Outliers
@@ -258,7 +246,6 @@ AmesHouesingDataFrame$HeatingQCNum <- as.numeric(factor(AmesHouesingDataFrame$He
 AmesHouesingDataFrame$CentralAirNum <- as.numeric(factor(AmesHouesingDataFrame$CentralAir,
                                                          levels = c("N", "Y"),
                                                          labels = c(0,1), ordered = TRUE))
-
 ```
 
 

@@ -38,6 +38,7 @@ AmesHouesingDataFrame
 
 ```{r}
 # First floor area is right skewed which is corrected in the log translation
+
 AmesHouesingDataFrameX1stFlrSF = filter(AmesHouesingDataFrame, X1stFlrSF > 1)
 
 # Histogram

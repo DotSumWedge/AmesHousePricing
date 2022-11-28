@@ -30,8 +30,8 @@ AmesHouesingDataFrame
 
 ```{r}
 #Masonry Veneer area is heavily right skewed which is corrected in the log translation
+
 AmesHouesingDataFrameMasVnrArea = filter(AmesHouesingDataFrame, MasVnrArea > 1)
-AmesHouesingDataFrameMasVnrArea
 
 # HistogramAmesHouesingDataFrameMasVnrArea
 hist(AmesHouesingDataFrameMasVnrArea$MasVnrArea, xlab='Masonry Veneer Area (Feet^2)', main='Histogram of Masonry Veneer Area')

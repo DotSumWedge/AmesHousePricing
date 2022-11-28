@@ -40,6 +40,7 @@ AmesHouesingDataFrame
 
 ```{r}
 # Total Basment area is right skewed which is corrected in the log translation
+
 AmesHouesingDataFrameTotalBsmtSF = filter(AmesHouesingDataFrame, TotalBsmtSF > 1)
 
 # Histogram

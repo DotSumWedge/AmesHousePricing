@@ -1,0 +1,170 @@
+---
+title: "HousingPricesModelTemplate"
+author: "Derek Rogers"
+date: "2022-11-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(naniar)
+library(tidyverse)
+library(ggplot2)
+library(plyr)
+library(ggcorrplot)
+library(gridExtra)
+```
+
+```{r}
+#AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+
+AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
+
+#AmesHouesingDataFrame <- read.csv("C:/Users/nicol/OneDrive/Desktop/train1.csv")
+```
+
+```{r}
+# Perform log transformations on columns that require it which was determined from the various *EDA.Rmd files and listed in Notes.txt
+
+AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
+
+AmesHouesingDataFrame$LogX1stFlrSF = log(AmesHouesingDataFrame$X1stFlrSF + 1)
+AmesHouesingDataFrame$LogX2ndFlrSF = log(AmesHouesingDataFrame$X2ndFlrSF + 1)
+AmesHouesingDataFrame$LogGrLivArea = log(AmesHouesingDataFrame$GrLivArea + 1)
+
+AmesHouesingDataFrame$LogTotalBsmtSF = log(AmesHouesingDataFrame$TotalBsmtSF + 1)
+AmesHouesingDataFrame$LogBsmtUnfSF = log(AmesHouesingDataFrame$BsmtUnfSF + 1)
+
+AmesHouesingDataFrame$LogWoodDeckSF = log(AmesHouesingDataFrame$WoodDeckSF + 1)
+AmesHouesingDataFrame$LogOpenPorchSF = log(AmesHouesingDataFrame$OpenPorchSF + 1)
+AmesHouesingDataFrame$LogX3SsnPorch = log(AmesHouesingDataFrame$X3SsnPorch + 1)
+AmesHouesingDataFrame$LogScreenPorch = log(AmesHouesingDataFrame$ScreenPorch + 1)
+
+AmesHouesingDataFrame$LogLotArea = log(AmesHouesingDataFrame$LotArea + 1)
+AmesHouesingDataFrame$LogLotFrontage = log(AmesHouesingDataFrame$LotFrontage + 1)
+
+AmesHouesingDataFrame$LogPoolArea = log(AmesHouesingDataFrame$PoolArea + 1)
+
+AmesHouesingDataFrame$LogGarageArea = log(AmesHouesingDataFrame$GarageArea + 1)
+
+AmesHouesingDataFrame$LogMasVnrArea = log(AmesHouesingDataFrame$MasVnrArea + 1)
+```
+
+```{r}
+# The data contain many NA values. These NA values are not necessarily missing data, but can be thought of as
+# a missing feature of certain homes.
+
+AmesHouesingDataFrame$Fence <- as.character(AmesHouesingDataFrame$Fence)
+AmesHouesingDataFrame$Fence[is.na(AmesHouesingDataFrame$Fence)] <- "None"
+AmesHouesingDataFrame$Fence <- as.factor(AmesHouesingDataFrame$Fence)
+
+# MSZoning: Identifies the general zoning classification of the sale.
+AmesHouesingDataFrame$MSZoning <- as.character(AmesHouesingDataFrame$MSZoning)
+AmesHouesingDataFrame$MSZoning[is.na(AmesHouesingDataFrame$MSZoning)] <- "None"
+AmesHouesingDataFrame$MSZoning <- as.factor(AmesHouesingDataFrame$MSZoning)
+
+# Exterior1st: Exterior covering on house
+AmesHouesingDataFrame$Exterior1st <- as.character(AmesHouesingDataFrame$Exterior1st)
+AmesHouesingDataFrame$Exterior1st[is.na(AmesHouesingDataFrame$Exterior1st)] <- "None"
+AmesHouesingDataFrame$Exterior1st <- as.factor(AmesHouesingDataFrame$Exterior1st)
+
+#Exterior2nd: Exterior covering on house (if more than one material)
+AmesHouesingDataFrame$Exterior2nd <- as.character(AmesHouesingDataFrame$Exterior2nd)
+AmesHouesingDataFrame$Exterior2nd[is.na(AmesHouesingDataFrame$Exterior2nd)] <- "None"
+AmesHouesingDataFrame$Exterior2nd <- as.factor(AmesHouesingDataFrame$Exterior2nd)
+
+AmesHouesingDataFrame$GarageType <- as.character(AmesHouesingDataFrame$GarageType)
+AmesHouesingDataFrame$GarageType[is.na(AmesHouesingDataFrame$GarageType)] <- "None"
+AmesHouesingDataFrame$GarageType <- as.factor(AmesHouesingDataFrame$GarageType)
+                                              
+AmesHouesingDataFrame$FireplaceQu <- as.character(AmesHouesingDataFrame$FireplaceQu)
+AmesHouesingDataFrame$FireplaceQu[is.na(AmesHouesingDataFrame$FireplaceQu)] <- "None"
+AmesHouesingDataFrame$FireplaceQu <- as.factor(AmesHouesingDataFrame$FireplaceQu)
+
+AmesHouesingDataFrame$Alley <- as.character(AmesHouesingDataFrame$Alley)
+AmesHouesingDataFrame$Alley[is.na(AmesHouesingDataFrame$Alley)] <- "None"
+AmesHouesingDataFrame$Alley <- as.factor(AmesHouesingDataFrame$Alley)
+
+AmesHouesingDataFrame$BsmtQual <- as.character(AmesHouesingDataFrame$BsmtQual)
+AmesHouesingDataFrame$BsmtQual[is.na(AmesHouesingDataFrame$BsmtQual)] <- "None"
+AmesHouesingDataFrame$BsmtQual <- as.factor(AmesHouesingDataFrame$BsmtQual)
+
+AmesHouesingDataFrame$BsmtCond <- as.character(AmesHouesingDataFrame$BsmtCond)
+AmesHouesingDataFrame$BsmtCond[is.na(AmesHouesingDataFrame$BsmtCond)] <- "None"
+AmesHouesingDataFrame$BsmtCond <- as.factor(AmesHouesingDataFrame$BsmtCond)
+
+AmesHouesingDataFrame$BsmtExposure <- as.character(AmesHouesingDataFrame$BsmtExposure)
+AmesHouesingDataFrame$BsmtExposure[is.na(AmesHouesingDataFrame$BsmtExposure)] <- "None"
+AmesHouesingDataFrame$BsmtExposure <- as.factor(AmesHouesingDataFrame$BsmtExposure)
+
+AmesHouesingDataFrame$BsmtFinType1 <- as.character(AmesHouesingDataFrame$BsmtFinType1)
+AmesHouesingDataFrame$BsmtFinType1[is.na(AmesHouesingDataFrame$BsmtFinType1)] <- "None"
+AmesHouesingDataFrame$BsmtFinType1 <- as.factor(AmesHouesingDataFrame$BsmtFinType1)
+
+AmesHouesingDataFrame$BsmtFinType2 <- as.character(AmesHouesingDataFrame$BsmtFinType2)
+AmesHouesingDataFrame$BsmtFinType2[is.na(AmesHouesingDataFrame$BsmtFinType2)] <- "None"
+AmesHouesingDataFrame$BsmtFinType2<- as.factor(AmesHouesingDataFrame$BsmtFinType2)
+
+AmesHouesingDataFrame$GarageFinish <- as.character(AmesHouesingDataFrame$GarageFinish)
+AmesHouesingDataFrame$GarageFinish[is.na(AmesHouesingDataFrame$GarageFinish)] <- "None"
+AmesHouesingDataFrame$GarageFinish <- as.factor(AmesHouesingDataFrame$GarageFinish)
+
+AmesHouesingDataFrame$GarageQual <- as.character(AmesHouesingDataFrame$GarageQual)
+AmesHouesingDataFrame$GarageQual[is.na(AmesHouesingDataFrame$GarageQual)] <- "None"
+AmesHouesingDataFrame$GarageQual <- as.factor(AmesHouesingDataFrame$GarageQual)
+
+AmesHouesingDataFrame$GarageCond <- as.character(AmesHouesingDataFrame$GarageCond)
+AmesHouesingDataFrame$GarageCond[is.na(AmesHouesingDataFrame$GarageCond)] <- "None"
+AmesHouesingDataFrame$GarageCond <- as.factor(AmesHouesingDataFrame$GarageCond)
+
+#MiscFeature: Miscellaneous feature not covered in other categories
+AmesHouesingDataFrame$MiscFeature <- as.character(AmesHouesingDataFrame$MiscFeature)
+AmesHouesingDataFrame$MiscFeature[is.na(AmesHouesingDataFrame$MiscFeature)] <- "None"
+AmesHouesingDataFrame$MiscFeature <- as.factor(AmesHouesingDataFrame$MiscFeature)                               
+
+# MasVnrType: Masonry veneer type
+AmesHouesingDataFrame$MasVnrType <- as.character(AmesHouesingDataFrame$MasVnrType)
+AmesHouesingDataFrame$MasVnrType[is.na(AmesHouesingDataFrame$MasVnrType)] <- "None"
+AmesHouesingDataFrame$MasVnrType <- as.factor(AmesHouesingDataFrame$MasVnrType)
+```
+
+```{r}
+# Numerical Encoding so that we can explore correlation:
+
+AmesHouesingDataFrame$ExterCondNum <- as.numeric(factor(AmesHouesingDataFrame$ExterCond,
+                                                        levels = c("Ex", "Fa", "Gd", "TA", "Po"),
+                                                        labels = c(5,2,4,3,1), ordered = TRUE))
+AmesHouesingDataFrame$HeatingQCNum <- as.numeric(factor(AmesHouesingDataFrame$HeatingQC,
+                                                        levels = c("Ex", "Fa", "Gd", "TA", "Po"),
+                                                        labels = c(5,2,4,3,1), ordered = TRUE))
+AmesHouesingDataFrame$CentralAirNum <- as.numeric(factor(AmesHouesingDataFrame$CentralAir,
+                                                         levels = c("N", "Y"),
+                                                         labels = c(0,1), ordered = TRUE))
+```
+
+```{r}
+# Numerical Encoding so that we can explore correlation for LOT VAR
+
+AmesHouesingDataFrame$LotShapeNum <- as.numeric(factor(AmesHouesingDataFrame$LotShape,
+                                                        levels = c("Reg", "IR1", "IR2", "IR3"),
+                                                        labels = c(4,3,2,1), ordered = TRUE))
+
+AmesHouesingDataFrame$LandContourNum <- as.numeric(factor(AmesHouesingDataFrame$LandContour,
+                                                        levels = c("Lvl", "Bnk", "HLS", "Low"),
+                                                        labels = c(4,3,2,1), ordered = TRUE))
+
+AmesHouesingDataFrame$LotConfigNum <- as.numeric(factor(AmesHouesingDataFrame$LotConfig,
+                                                         levels = c("Inside",
+                                                                    "Corner",
+                                                                    "CulDSac","FR2",
+                                                                    "FR3"),
+                                                         labels = c(5,4,3,2,1), ordered = TRUE))
+
+AmesHouesingDataFrame$LandSlopeNum <- as.numeric(factor(AmesHouesingDataFrame$LandSlope,
+                                                     levels = c("Gtl", "Mod", "Sev"),
+                                                     labels = c(3,2,1),
+                                                     ordered = TRUE))
+```

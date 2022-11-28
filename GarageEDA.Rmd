@@ -1,5 +1,5 @@
 ---
-title: "OverallGarageValue"
+title: "GarageEDA"
 author: "Derek Rogers"
 date: "2022-11-27"
 output: html_document

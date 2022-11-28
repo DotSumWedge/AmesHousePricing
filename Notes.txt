@@ -118,7 +118,7 @@ Columns that might need a log transformation:
     SalePrice - Yes
     LotArea - Yes
     LotFrontage - Yes
-    MasVnrArea - 
+    MasVnrArea - Yes
     BsmtFinSF1 - 
     BsmtFinSF2 - 
     BsmtUnfSF - 

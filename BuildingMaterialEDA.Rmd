@@ -1,0 +1,67 @@
+---
+title: "BuildingMaterialEDA"
+author: "Derek Rogers"
+date: "2022-11-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Feature engineer an overall building material value from the columns:
+#    Exterior1st
+#    Exterior2nd
+#    MasVnrType
+#    MasVnrArea
+#    ExterQual
+#    ExterCond
+```
+
+```{r}
+library(tidyverse)
+AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+
+AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
+AmesHouesingDataFrame$LogMasVnrArea = log(AmesHouesingDataFrame$MasVnrArea + 1)
+
+AmesHouesingDataFrame$MasVnrArea
+```
+
+```{r}
+#Masonry Veneer area is heavily right skewed which is corrected in the log translation
+drop_na(AmesHouesingDataFrame)
+AmesHouesingDataFrameMasVnrArea = filter(AmesHouesingDataFrame, MasVnrArea > 1)
+
+# Histogram
+hist(AmesHouesingDataFrameMasVnrArea$MasVnrArea, xlab='Masonry Veneer Area (Feet^2)', main='Histogram of Masonry Veneer Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameMasVnrArea$MasVnrArea, xlab = "Masonry Veneer Area", ylab = "Masonry Veneer Area in log(feet^2)", main = "Boxplot of Masonry Veneer Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameMasVnrArea$MasVnrArea, pch = 1, frame = FALSE, main = "Q-Q Plot for Masonry Veneer Area", ylab = "Masonry Veneer Area in log(feet^2)")
+qqline(AmesHouesingDataFrameMasVnrArea$MasVnrArea, col = "steelblue", lwd = 2)
+
+# Histogram
+hist(AmesHouesingDataFrameMasVnrArea$LogMasVnrArea, xlab='Masonry Veneer Area in log(feet^2)', main='Histogram of log Masonry Veneer Area')
+
+# Box plot
+boxplot(AmesHouesingDataFrameMasVnrArea$LogMasVnrArea, xlab = "Masonry Veneer Area", ylab = "Masonry Veneer Area in log(feet^2)", main = "Boxplot of Log Masonry Veneer Area")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrameMasVnrArea$LogMasVnrArea, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Masonry Veneer Area", ylab = "Masonry Veneer Area in log(feet^2)")
+qqline(AmesHouesingDataFrameMasVnrArea$LogMasVnrArea, col = "steelblue", lwd = 2)
+
+AmesHouesingDataFrameMasVnrArea %>% ggplot(aes(x = MasVnrArea, y = SalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="Masonry Veneer Area in Feet^2 vs sales price in Ames Iowa")
+
+AmesHouesingDataFrameMasVnrArea %>% ggplot(aes(x = LogMasVnrArea, y = LogSalePrice, color = HouseStyle)) + 
+  geom_jitter() + geom_smooth(method = "lm") +
+  labs(title="log(Masonry Veneer Area in Feet^2) vs log(sales price) in Ames Iowa")
+
+fit = lm(LogSalePrice~LogMasVnrArea, data = AmesHouesingDataFrameMasVnrArea)
+summary(fit)
+```

@@ -18,17 +18,17 @@ knitr::opts_chunk$set(echo = TRUE)
 #    HalfBath
 #    Bedroom
 #    Kitchen
-#    KitchenQual
-#    TotRmsAbvGrd
-#    Functional
+#    KitchenQual # transform to num/level
+#    TotRmsAbvGrd # does not include bthroom
+#    Functional # in a way this is "type/condition" will transform to num level
 #    Fireplaces
-#    FireplaceQu
+#    FireplaceQu # transform to num/level
 ```
 
 ```{r}
-AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+#AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
 
-#AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
+AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
 
 #AmesHouesingDataFrame <- read.csv("C:/Users/nicol/OneDrive/Desktop/train1.csv")
 
@@ -38,6 +38,11 @@ AmesHouesingDataFrame$LogX2ndFlrSF = log(AmesHouesingDataFrame$X2ndFlrSF + 1)
 AmesHouesingDataFrame$LogGrLivArea = log(AmesHouesingDataFrame$GrLivArea + 1)
 
 AmesHouesingDataFrame
+
+
+AmesHouesingDataFrame$FireplaceQu <- as.character(AmesHouesingDataFrame$FireplaceQu)
+AmesHouesingDataFrame$FireplaceQu[is.na(AmesHouesingDataFrame$FireplaceQu)] <- "None"
+AmesHouesingDataFrame$FireplaceQu <- as.factor(AmesHouesingDataFrame$FireplaceQu)
 ```
 
 ```{r}
@@ -147,4 +152,39 @@ AmesHouesingDataFrameGrLivArea %>% ggplot(aes(x = LogGrLivArea, y = LogSalePrice
 
 fit = lm(LogSalePrice~LogGrLivArea, data = AmesHouesingDataFrameGrLivArea)
 summary(fit)
+```
+
+
+```{r}
+# Numerical / Level Encoding for Corr plot
+AmesHouesingDataFrame$KitchenQualNum <- as.numeric(factor(AmesHouesingDataFrame$KitchenQual,
+                                                          levels = c("Ex", "Gd", "TA","Fa","Po"),
+                                                          labels = c(5,4,3,2,1)))
+AmesHouesingDataFrame$FunctionalNum <- as.numeric(factor(AmesHouesingDataFrame$Functional,
+                                                         levels = c("Typ","Min1","Min2","Mod","Maj1",
+                                                                    "Maj2","Sev","Sal"),
+                                                         labels = c(8,7,6,5,4,3,2,1)))
+
+AmesHouesingDataFrame$FireplaceQuNum <- as.numeric(factor(AmesHouesingDataFrame$FireplaceQu,
+                                                          levels = c("Ex","Gd","TA","Fa","Po","None"),
+                                                          labels = c(6,5,4,3,2,1)))
+
+```
+
+```{r}
+abv_ground_var <- c("LogX1stFlrSF","LogX2ndFlrSF","LogGrLivArea",
+                    "FullBath","HalfBath","BedroomAbvGr","KitchenAbvGr","KitchenQualNum",
+                    "TotRmsAbvGrd","FunctionalNum","Fireplaces","FireplaceQuNum")
+
+abv_ground_df <- AmesHouesingDataFrame[,abv_ground_var]
+abv_ground_df <- cor(abv_ground_df)
+
+ggcorrplot(corr = abv_ground_df, lab = TRUE, lab_size = 3,
+           colors = c("#6D9EC1", "white", "#E46726")) +
+  labs(title = "Correlation Between Variables and Attrition", 
+       subtitle = "Netural and Positive Correlation") +
+  theme(plot.title = element_text(hjust = .5),
+        plot.subtitle = element_text(hjust = .5))
+
+
 ```

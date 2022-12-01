@@ -16,6 +16,7 @@ library(ggplot2)
 library(plyr)
 library(ggcorrplot)
 library(gridExtra)
+library(olsrr)
 ```
 
 ```{r}
@@ -167,4 +168,8 @@ AmesHouesingDataFrame$LandSlopeNum <- as.numeric(factor(AmesHouesingDataFrame$La
                                                      levels = c("Gtl", "Mod", "Sev"),
                                                      labels = c(3,2,1),
                                                      ordered = TRUE))
+```
+
+```{r}
+AmesHouesingDataFrame
 ```

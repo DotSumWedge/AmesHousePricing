@@ -24,6 +24,8 @@ library(olsrr)
 
 AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
 
+AmesHouesingDataFrame_test<-read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv")
+
 #AmesHouesingDataFrame <- read.csv("C:/Users/nicol/OneDrive/Desktop/train1.csv")
 ```
 
@@ -171,5 +173,104 @@ AmesHouesingDataFrame$LandSlopeNum <- as.numeric(factor(AmesHouesingDataFrame$La
 ```
 
 ```{r}
-AmesHouesingDataFrame
+# library(gbm)
+# library(mice)
+# library(moments)
+# library(ggplot2)
+# library(tidyverse)
+# library(janitor)
+# library(readxl)
+# library(GGally)
+# library(ggplot2)
+# library(treemapify)
+# library(gridExtra)
+# library(grid)
+# library(scales)
+# library(ggcorrplot)
+# library(corrplot)
+# library(class)
+# library(caret)
+# library(pROC)
+# library(e1071)
+# library(kableExtra)
+# library(StepReg)
+# library(ggthemes)
+# library(olsrr)
+# library(stargazer)
+# library(car)
+# library(leaps)
+# library(forecast)
+# AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv", header = TRUE)
+# AmesHouesingDataFrame_test <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
+# 
+# ```
+# 
+# ```{r}
+# 
+# 
+# AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
+# 
+# AmesHouesingDataFrame$LogX1stFlrSF = log(AmesHouesingDataFrame$X1stFlrSF + 1)
+# AmesHouesingDataFrame$LogX2ndFlrSF = log(AmesHouesingDataFrame$X2ndFlrSF + 1)
+# AmesHouesingDataFrame$LogGrLivArea = log(AmesHouesingDataFrame$GrLivArea + 1)
+# 
+# AmesHouesingDataFrame$LogTotalBsmtSF = log(AmesHouesingDataFrame$TotalBsmtSF + 1)
+# AmesHouesingDataFrame$LogBsmtUnfSF = log(AmesHouesingDataFrame$BsmtUnfSF + 1)
+# 
+# AmesHouesingDataFrame$LogWoodDeckSF = log(AmesHouesingDataFrame$WoodDeckSF + 1)
+# AmesHouesingDataFrame$LogOpenPorchSF = log(AmesHouesingDataFrame$OpenPorchSF + 1)
+# AmesHouesingDataFrame$LogX3SsnPorch = log(AmesHouesingDataFrame$X3SsnPorch + 1)
+# AmesHouesingDataFrame$LogScreenPorch = log(AmesHouesingDataFrame$ScreenPorch + 1)
+# 
+# AmesHouesingDataFrame$LogLotArea = log(AmesHouesingDataFrame$LotArea + 1)
+# AmesHouesingDataFrame$LogLotFrontage = log(AmesHouesingDataFrame$LotFrontage + 1)
+# 
+# AmesHouesingDataFrame$LogPoolArea = log(AmesHouesingDataFrame$PoolArea + 1)
+# 
+# AmesHouesingDataFrame$LogGarageArea = log(AmesHouesingDataFrame$GarageArea + 1)
+# 
+# AmesHouesingDataFrame$LogMasVnrArea = log(AmesHouesingDataFrame$MasVnrArea + 1)
+# 
+# 
+# 
+# names(AmesHouesingDataFrame)
+# # w/o messing around too much with transforms etc. I want to get 
+# # baseline vars together that may have an impact on prices of homes. 
+# home_vars <- c('Id','MSZoning','Utilities', 'Neighborhood','BldgType','HouseStyle',
+#                 'OverallQual','OverallCond','YearBuilt', 'ExterQual','ExterCond',
+#                 'BsmtQual','BsmtCond','TotalBsmtSF','Heating','HeatingQC', 
+#                 'CentralAir','Electrical','BedroomAbvGr','KitchenAbvGr',
+#                 'KitchenQual','TotRmsAbvGrd','Functional','Fireplaces','FireplaceQu',
+#                'GarageArea','GarageQual','GarageCond','OpenPorchSF',#'PoolArea',,'GrLivArea'"LogX1stFlrSF", "LogX2ndFlrSF","LogPoolArea",
+#                 'Fence','MoSold','YrSold','SaleType','SaleCondition','SalePrice',
+#                 "LogGrLivArea","LogTotalBsmtSF",
+#                "LogWoodDeckSF","LogOpenPorchSF","LogX3SsnPorch","LogScreenPorch",
+#                "LogLotArea","LogLotFrontage","LogGarageArea","LogMasVnrArea"
+#                )
+# 
+# # creating the training set
+# home_train_vars <- AmesHouesingDataFrame[,home_vars]
+# 
+# # we do know that sales price needs to be logged... so at least let's get that
+# # in here...
+# home_train_vars$lSalePrice <- log(home_train_vars$SalePrice)
+# 
+# # some factors/vars need to be updated for use in our model/interpertations etc. 
+# home_train_vars$ExterCond2 <- as.numeric(factor(home_train_vars$ExterCond,
+#                                                 levels = c("Ex","Gd","TA","Fa","Po"),
+#                                                 labels = c(5,4,3,2,1), ordered = TRUE))
+# 
+# home_train_vars$HeatingQC2 <- as.numeric(factor(home_train_vars$HeatingQC, 
+#                                   levels = c("Ex", "Gd","TA", "Fa","Po"),
+#                                   labels = c(5,4,3,2,1) ,ordered = TRUE))
+# 
+# home_train_vars$CentralAir2 <- as.numeric(factor(home_train_vars$CentralAir, 
+#                                   levels = c("N", "Y"),
+#                                   labels = c(0,1) ,ordered = TRUE))
+# 
+# 
+# 
+# ```
+
+
 ```

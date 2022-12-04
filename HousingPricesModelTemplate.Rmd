@@ -41,11 +41,11 @@ library(forecast)
 ```
 
 ```{r}
-AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
-AmesHouesingTestDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv"))
+#AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+#AmesHouesingTestDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv"))
 
-#AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
-#AmesHouesingDataFrame_test<-read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv")
+AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
+AmesHouesingDataFrame_test<-read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv")
 
 #AmesHouesingDataFrame <- read.csv("C:/Users/nicol/OneDrive/Desktop/train1.csv")
 #AmesHouesingDataFrame <- read.csv("C:/Users/nicol/OneDrive/Desktop/test1.csv")
@@ -313,8 +313,8 @@ ols_step_both_p(home_reg2, prem = .05, details = FALSE)
 ```
 
 ```{r}
-#hdata <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
-hdata <- read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv",header = TRUE)
+hdata <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
+#hdata <- read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv",header = TRUE)
 
 # The data contain many NA values. These NA values are not necessarily missing data, but can be thought of as
 # a missing feature of certain homes.
@@ -431,7 +431,7 @@ summary(hfit)
 hdata$SalePrice = as.numeric(NA)
 hdata$lSalePrice = as.numeric(NA)
 
-hpred <- predict(hfit, interval = "predict", newdata = hdata) # na.action = ? goes here
+hpred <- predict(hfit, interval = "predict", newdata = hdata, na.action = na.omit ) # na.action = ? goes here
 
 h_prediction <- data.frame(cbind(hdata$Id, exp(hpred[,1]))) # the exp() is the back transform 
 
@@ -440,6 +440,6 @@ names(h_prediction) <- c("ID", "SalePrice")
 
 h_prediction
 
-write.csv(h_prediction, file = "./housePred2.csv", row.names = FALSE)
+write.csv(h_prediction, file = "./housePred12.csv", row.names = FALSE)
 
 ```

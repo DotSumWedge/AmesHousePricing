@@ -50,47 +50,25 @@ three_n <- AmesHouesingDataFrame %>%
 # dependent on the neighborhood? 
 
 
-three_n %>% ggplot(aes(GrLivArea, log(SalePrice), color = Neighborhood)) + 
-  geom_point() + ylab("Log Sale Price") + xlab("Ground Living Area Square Feet")
-# Findings - we have outliers with extreme SF but they don't follow price trend
-
-
-
-# LOG LOG
-three_n %>% ggplot(aes(log(GrLivArea), log(SalePrice), color = as.factor(MSSubClass))) +
-  geom_point()
-# Findings - the log transform of GLA seems to help the outliers a bit. 
-
-# investigating the outliers. 
-three_n %>% filter(as.factor(MSSubClass) == 60|
-                     as.factor(MSSubClass) == 50|
-                   as.factor(MSSubClass) == 70) %>%
+three_n %>% 
   ggplot(aes(log(GrLivArea), log(SalePrice), color= as.factor(MSSubClass))) +
-  geom_point()
+  geom_point() + ggtitle("Saleprice v GrLivArea | MSSubClass")
 
+three_n %>% 
+  ggplot(aes(log(GrLivArea), log(SalePrice), color= LotShape)) +
+  geom_point(size = 3, alpha = .7) + ggtitle("Log Sale Price  v. Log Live Area | LotShape") +
+  ylab("Log Sale Price")+ xlab("Log Ground Living Area")
 
+# plot for Year sold and LOG sale price. price seems to be down in 2008 (which is when the outlier was sold)
+AmesHouesingDataFrame %>%
+  ggplot(aes(log(SalePrice), as.factor(YrSold), fill = as.factor(YrSold)))+
+  geom_boxplot(color = "black") + coord_flip() +
+  ggtitle("Log Sale Price: 2006-2010") + xlab("Log Sale Price") +
+  ylab("Year")
 
-
-# HIST. GR LIV AREA
-three_n %>% ggplot(aes(log(GrLivArea))) +
-  geom_histogram(color = "black",fill = "steel blue", show.legend = FALSE)+
-  ggtitle("Distribution of GrLivArea")
-
-
-
-# HIST. SALEPRICE
-three_n %>% ggplot(aes(log(SalePrice))) +
-  geom_histogram(color = "black", fill = "steel blue", show.legend = F)
-# log transform the SP does help the appearance of normality.. but SLIGHT 
-# skew to left. 
- 
-
-AmesHouesingDataFrame %>% ggplot(aes(log(SalePrice), as.factor(YrSold), fill = as.factor(YrSold)))+
-  geom_bar(stat = 'identity')
-
-three_n %>% filter(Neighborhood == "Edwards"& MSZoning == "RL") %>%
+three_n  %>% 
   ggplot(aes(log(GrLivArea), log(SalePrice), color = as.factor(SaleCondition))) +
-  geom_point()
+  geom_point(size = 2) + ggtitle("Sale Price v. GrLivArea | Sale Condition")
 
 
 ```

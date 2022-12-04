@@ -37,7 +37,44 @@ library(ggthemes)
 library(stargazer)
 library(car)
 library(leaps)
+library(epiR)
 library(forecast)
+library(ggplot2)
+library(mosaic)
+library(dplyr)
+library(GGally)
+library(gtools)
+library(ggfortify)
+library(readr)
+library(dplyr)
+library(ggpubr)
+library(modelr)
+library(corrplot)
+library(caret)
+library(mlbench)
+library(scales)
+library(olsrr)
+library(tidyverse)
+library(RColorBrewer)
+library(tidyverse)
+library(ggplot2)
+library(scales)
+library(pwr)
+library(agricolae)
+library(huxtable)
+library(lawstat)
+library(lsmeans)
+library(nCDunnett)
+library(dplyr)
+library(WDI)
+library(investr)
+library(multcomp)
+library(pairwiseCI)
+library(DescTools)
+library(GGally)
+library(olsrr)
+library(lmtest)
+
 ```
 
 ```{r}
@@ -308,9 +345,7 @@ ols_step_forward_p(home_reg2)
 ols_step_backward_p(home_reg2)
 ```
 
-```{r}
-ols_step_both_p(home_reg2, prem = .05, details = FALSE)
-```
+
 
 ```{r}
 hdata <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
@@ -441,5 +476,73 @@ names(h_prediction) <- c("ID", "SalePrice")
 h_prediction
 
 write.csv(h_prediction, file = "./housePred12.csv", row.names = FALSE)
+
+```
+
+
+```{r}
+ols_step_both_p(home_reg2, prem = .05, details = FALSE)
+
+model_stepwise <- lm(LogSalePrice ~ OverallQual + LogGrLivArea + YearBuilt + LogLotArea +
+                       OverallCond + BedroomAbvGr + LogTotalBsmtSF + Fireplaces +
+                       LogGarageArea + HeatingQCNum + LogScreenPorch + LogWoodDeckSF, data = lr_model2)
+
+summary(model_stepwise)
+hdata$SalePrice = as.numeric(NA)
+hdata$lSalePrice = as.numeric(NA)
+swPred <- predict(model_stepwise, interval = "predict", newdata = hdata, na.action = na.omit)
+
+swPrediction <- data.frame(cbind(hdata$Id, exp(swPred[,1])))
+
+names(swPrediction) <- c("ID", "SalePrice")
+
+swPrediction
+
+write.csv(swPrediction, file = "./stepwisePred.csv", row.names = FALSE)
+```
+
+
+```{r}
+# library(epiR)
+# data <- as.table(matrix(c(670,202,74,640), nrow = 2, byrow = TRUE))
+# rval <- epi.tests(data, conf.level = 0.95)
+# print(rval)  
+
+model_fit_stats <- function(linear.model) {
+  r.sqr <- summary(linear.model)$r.squared
+  adj.r.sqr <- summary(linear.model)$adj.r.squared
+  pre.r.sqr <- pred_r_squared(linear.model)
+  PRESS <- PRESS(linear.model)
+  return.df <- data.frame(r.squared = r.sqr, adj.r.squared = adj.r.sqr, pred.r.squared = pre.r.sqr, press = PRESS)
+  return(return.df)
+}
+model_fit_stats(model_stepwise)
+
+pred_r_squared <- function(linear.model) {
+  #' Use anova() to get the sum of squares for the linear model
+  lm.anova <- anova(linear.model)
+  #' Calculate the total sum of squares
+  tss <- sum(lm.anova$'Sum Sq')
+  # Calculate the predictive R^2
+  pred.r.squared <- 1-PRESS(linear.model)/(tss)
+  
+  return(pred.r.squared)
+}
+pred_r_squared(model_stepwise) # pred r2
+
+PRESS <- function(linear.model) {
+  #' calculate the predictive residuals
+  pr <- residuals(linear.model)/(1-lm.influence(linear.model)$hat)
+  #' calculate the PRESS
+  PRESS <- sum(pr^2)
+  
+  return(PRESS)
+}
+
+PRESS(model_stepwise)
+
+AIC(model_stepwise)
+
+
 
 ```

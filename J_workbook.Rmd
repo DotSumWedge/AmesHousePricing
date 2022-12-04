@@ -35,9 +35,10 @@ library(leaps)
 library(forecast)
 
 AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv", header = TRUE)
-
 AmesHouesingDataFrame_test <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
 
+AmesHouesingDataFrame = read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv",header = TRUE)
+AmesHouesingTestDataFrame = read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv",header = TRUE)
 ```
 
 
@@ -244,6 +245,7 @@ car::vif(home_reg2)
 
 ```{r}
 hdata <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
+#hdata <- read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv",header = TRUE)
 
 # The data contain many NA values. These NA values are not necessarily missing data, but can be thought of as
 # a missing feature of certain homes.

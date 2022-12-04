@@ -28,7 +28,7 @@ AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHouseP
 
 ```{r}
 # Perform log transformations on columns that require it which was determined from the various *EDA.Rmd files and listed in Notes.txt
-
+AmesHouesingDataFrame %>% filter(Neighborhood == )
 AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
 
 AmesHouesingDataFrame$LogX1stFlrSF = log(AmesHouesingDataFrame$X1stFlrSF + 1)

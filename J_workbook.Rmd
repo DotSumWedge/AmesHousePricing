@@ -41,39 +41,6 @@ AmesHouesingDataFrame_test <- read.csv("C:/Users/Joey/Desktop/house-prices-advan
 ```
 
 
-```{r}
-# Filtering for 3 key neighborhoods
-three_n <- AmesHouesingDataFrame %>%
-  filter(Neighborhood == "NAmes" | Neighborhood == "Edwards" | Neighborhood == "BrkSide")
-
-# how is sales price related to square footage? 
-# Squarefootage = GrLIvArea 
-# is the relationship between SalesPrice and SquareFootage 
-# dependent on the neighborhood? 
-
-
-three_n %>% 
-  ggplot(aes(log(GrLivArea), log(SalePrice), color= as.factor(MSSubClass))) +
-  geom_point() + ggtitle("Saleprice v GrLivArea | MSSubClass")
-
-three_n %>% 
-  ggplot(aes(log(GrLivArea), log(SalePrice), color= LotShape)) +
-  geom_point(size = 3, alpha = .7) + ggtitle("Log Sale Price  v. Log Live Area | LotShape") +
-  ylab("Log Sale Price")+ xlab("Log Ground Living Area")
-
-# plot for Year sold and LOG sale price. price seems to be down in 2008 (which is when the outlier was sold)
-AmesHouesingDataFrame %>%
-  ggplot(aes(log(SalePrice), as.factor(YrSold), fill = as.factor(YrSold)))+
-  geom_boxplot(color = "black") + coord_flip() +
-  ggtitle("Log Sale Price: 2006-2010") + xlab("Log Sale Price") +
-  ylab("Year")
-
-three_n  %>% 
-  ggplot(aes(log(GrLivArea), log(SalePrice), color = as.factor(SaleCondition))) +
-  geom_point(size = 2) + ggtitle("Sale Price v. GrLivArea | Sale Condition")
-
-
-```
 
 
 ```{r}
@@ -99,6 +66,11 @@ AmesHouesingDataFrame$LogPoolArea = log(AmesHouesingDataFrame$PoolArea + 1)
 AmesHouesingDataFrame$LogGarageArea = log(AmesHouesingDataFrame$GarageArea + 1)
 
 AmesHouesingDataFrame$LogMasVnrArea = log(AmesHouesingDataFrame$MasVnrArea + 1)
+
+AmesHouesingDataFrame = AmesHouesingDataFrame[!(AmesHouesingDataFrame$Id == "524" | AmesHouesingDataFrame$Id == "1299"),]
+dim(AmesHouesingDataFrame)
+
+
 
 
 # w/o messing around too much with transforms etc. I want to get 
@@ -135,6 +107,42 @@ home_train_vars$CentralAir2 <- as.numeric(factor(home_train_vars$CentralAir,
                                   levels = c("N", "Y"),
                                   labels = c(0,1) ,ordered = TRUE))
 
+
+
+```
+
+
+
+```{r}
+# Filtering for 3 key neighborhoods
+three_n <- AmesHouesingDataFrame %>%
+  filter(Neighborhood == "NAmes" | Neighborhood == "Edwards" | Neighborhood == "BrkSide")
+
+# how is sales price related to square footage? 
+# Squarefootage = GrLIvArea 
+# is the relationship between SalesPrice and SquareFootage 
+# dependent on the neighborhood? 
+
+
+three_n %>% 
+  ggplot(aes(log(GrLivArea), log(SalePrice), color= as.factor(MSSubClass))) +
+  geom_point() + ggtitle("Saleprice v GrLivArea | MSSubClass")
+
+three_n %>% 
+  ggplot(aes(log(GrLivArea), log(SalePrice), color= LotShape)) +
+  geom_point(size = 3, alpha = .7) + ggtitle("Log Sale Price  v. Log Live Area | LotShape") +
+  ylab("Log Sale Price")+ xlab("Log Ground Living Area")
+
+# plot for Year sold and LOG sale price. price seems to be down in 2008 (which is when the outlier was sold)
+AmesHouesingDataFrame %>%
+  ggplot(aes(log(SalePrice), as.factor(YrSold), fill = as.factor(YrSold)))+
+  geom_boxplot(color = "black") + coord_flip() +
+  ggtitle("Log Sale Price: 2006-2010") + xlab("Log Sale Price") +
+  ylab("Year")
+
+three_n  %>% 
+  ggplot(aes(log(GrLivArea), log(SalePrice), color = as.factor(SaleCondition))) +
+  geom_point(size = 2) + ggtitle("Sale Price v. GrLivArea | Sale Condition")
 
 
 ```
@@ -197,7 +205,7 @@ Second Model
 # adjusted vars to use in model after above:
 
 adj_var <- c("OverallQual", "LogGrLivArea","YearBuilt","LogLotArea",
-             "OverallCond","TotalBsmtSF","GarageArea","Fireplaces",
+             "OverallCond","TotalBsmtSF","LogGarageArea","Fireplaces",
              "HeatingQC2","KitchenAbvGr","LogScreenPorch","BedroomAbvGr",
              "LogWoodDeckSF", "SalePrice")
 
@@ -274,6 +282,7 @@ hdata$CentralAir2 <- as.numeric(factor(hdata$CentralAir,
 hfit <- lm(lSalePrice ~ .-SalePrice, data = lr_model)
 # not sure why this is getting stuck.. obviously error says
 # it is becuase SalePrice is not found... but it shouldn't be found in hdata since it's a "test" set...idk maybe it's just late. 
+
 hpred <- predict(hfit, interval = "predict", newdata = hdata)
 
 h_prediction <- data.frame(cbind(hdata$ID, hpred[,1]))

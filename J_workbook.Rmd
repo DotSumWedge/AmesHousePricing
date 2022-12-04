@@ -245,6 +245,8 @@ car::vif(home_reg2)
 ```{r}
 hdata <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
 
+
+
 hdata$LogX1stFlrSF = log(hdata$X1stFlrSF + 1)
 hdata$LogX2ndFlrSF = log(hdata$X2ndFlrSF + 1)
 hdata$LogGrLivArea = log(hdata$GrLivArea + 1)
@@ -280,16 +282,15 @@ hdata$CentralAir2 <- as.numeric(factor(hdata$CentralAir,
 
 
 hfit <- lm(lSalePrice ~ .-SalePrice, data = lr_model)
-# not sure why this is getting stuck.. obviously error says
-# it is becuase SalePrice is not found... but it shouldn't be found in hdata since it's a "test" set...idk maybe it's just late. 
 
+hdata$SalePrice = as.numeric(NA)
 hpred <- predict(hfit, interval = "predict", newdata = hdata)
 
-h_prediction <- data.frame(cbind(hdata$ID, hpred[,1]))
+h_prediction <- data.frame(cbind(hdata$Id, hpred[,1]))
+
 names(h_prediction) <- c("ID", "MonthlyIncome")
 
 
-
-
+write.csv(h_prediction, file = "./housePred.csv", row.names = FALSE)
 
 ```

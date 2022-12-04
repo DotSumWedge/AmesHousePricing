@@ -41,11 +41,11 @@ library(forecast)
 ```
 
 ```{r}
-#AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
-#AmesHouesingTestDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv"))
+AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+AmesHouesingTestDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv"))
 
-AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
-AmesHouesingDataFrame_test<-read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv")
+#AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
+#AmesHouesingDataFrame_test<-read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv")
 
 #AmesHouesingDataFrame <- read.csv("C:/Users/nicol/OneDrive/Desktop/train1.csv")
 #AmesHouesingDataFrame <- read.csv("C:/Users/nicol/OneDrive/Desktop/test1.csv")
@@ -201,88 +201,86 @@ head(AmesHouesingDataFrame)
 ```{r}
 # bringing in some of the feats for trial in model...
 # still using basic stuff. 
-model_var = c('LogSalePrice', 
-                'OverallQual','OverallCond','YearBuilt','ExterCondNum',
-                'LogTotalBsmtSF','HeatingQCNum', 
-                'CentralAirNum','BedroomAbvGr','KitchenAbvGr',
-                'TotRmsAbvGrd','Fireplaces',
-                'LogGarageArea','LogOpenPorchSF',
-                 'YrSold', "LogGrLivArea",
-               "LogWoodDeckSF","LogScreenPorch",
-               "LogLotArea","LogMasVnrArea"
-               )
+model_var = c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
+              'ExterCondNum','LogTotalBsmtSF','HeatingQCNum', 
+              'CentralAirNum','BedroomAbvGr','KitchenAbvGr',
+              'TotRmsAbvGrd','Fireplaces', 'LogGarageArea',
+              'LogOpenPorchSF','YrSold', "LogGrLivArea","LogWoodDeckSF",
+              "LogScreenPorch","LogLotArea","LogMasVnrArea")
 
-
-lr_model <- AmesHouesingDataFrame[,model_var]
+lr_model = AmesHouesingDataFrame[,model_var]
 
 set.seed(4)
-train.index <- sample(c(1:dim(lr_model)[1]), dim(lr_model)[1]*0.8)
-lr_model_train <- lr_model[train.index,]
-lr_model_test <- lr_model[-train.index,]
+train.index = sample(c(1:dim(lr_model)[1]), dim(lr_model)[1]*0.8)
+lr_model_train = lr_model[train.index,]
+lr_model_test = lr_model[-train.index,]
 
-home_regression <- lm(LogSalePrice~.-LogSalePrice, data = lr_model_train)
+home_regression = lm(LogSalePrice~.-LogSalePrice, data = lr_model_train)
 summary(home_regression)
 
 # note "response" this will give you numerical result min/1stq /median/mean/3rd q/ max/ NA's
-pred1 <- predict(home_regression, lr_model_test, type = "response")
+pred1 = predict(home_regression, lr_model_test, type = "response")
 # summary(pred1)
 
-residuals <- lr_model_test$LogSalePrice - pred1
+residuals = lr_model_test$LogSalePrice - pred1
 
-home_regression_pred <- data.frame("Predicted" = pred1, "Actual" = lr_model_test$LogSalePrice, "Residual" = residuals)
+home_regression_pred = data.frame("Predicted" = pred1, "Actual" = lr_model_test$LogSalePrice, "Residual" = residuals)
 
 # returns ME-RMSE-MAE-MPE-MAPE
 accuracy(pred1, lr_model_test$LogSalePrice)
 
-
 # note "predict" this returns fit/lwr/upr
-pred2 <- predict(home_regression, interval = "predict", newdata = lr_model_test) 
+pred2 = predict(home_regression, interval = "predict", newdata = lr_model_test) 
 # summary(pred2)
 
 stargazer(home_regression, type = 'text')
 
 car::vif(home_regression)
- #comment out so we don't hang up the console with time
-# ols_step_both_p(home_reg, prem = .05, details = TRUE)
 ```
 
+```{r}
+ols_step_forward_p(home_regression)
+```
 
+```{r}
+ols_step_backward_p(home_regression)
+```
+
+```{r}
+ols_step_both_p(home_regression, prem = .05, details = FALSE)
+```
 
 Second Model 
 ```{r}
 # adjusted vars to use in model after above:
 
-adj_var <- c("OverallQual", "LogGrLivArea","YearBuilt","LogLotArea",
-             "OverallCond","TotalBsmtSF","GarageArea","Fireplaces",
-             "HeatingQC2","KitchenAbvGr","LogScreenPorch","BedroomAbvGr",
-             "LogWoodDeckSF", "SalePrice")
+adj_var <- c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
+              'ExterCondNum','LogTotalBsmtSF','HeatingQCNum', 
+              'BedroomAbvGr','Fireplaces', 'LogGarageArea', 
+              "LogGrLivArea","LogWoodDeckSF","LogScreenPorch","LogLotArea")
 
-
-
-lr_model2 <- home_train_vars[,adj_var]
-lr_model2$lSalePrice <- log(lr_model2$SalePrice)
+lr_model2 = AmesHouesingDataFrame[,adj_var]
 
 set.seed(4)
 train.index <- sample(c(1:dim(lr_model2)[1]), dim(lr_model2)[1]*0.8)
 lr_model_train2 <- lr_model2[train.index,]
 lr_model_test2 <- lr_model2[-train.index,]
 
-home_reg2 <- lm(lSalePrice ~ . -SalePrice, data = lr_model_train2)
+home_reg2 <- lm(LogSalePrice~ . -LogSalePrice, data = lr_model_train2)
 summary(home_reg2)
-
 
 pred3 <- predict(home_reg2,lr_model_test2,type = "response")
 
-residuals2 <- lr_model_test2$lSalePrice - pred3
+residuals2 <- lr_model_test2$LogSalePrice - pred3
 
-home_reg_pred2 <- data.frame("Predicted" = pred3, "Actual" = lr_model_test2$lSalePrice, "Residual" = residuals2)
+home_reg_pred2 <- data.frame("Predicted" = pred3, "Actual" = lr_model_test2$LogSalePrice, "Residual" = residuals2)
 
 # returns ME-RMSE-MAE-MPE-MAPE
-accuracy(pred3, lr_model_test2$lSalePrice)
+accuracy(pred3, lr_model_test2$LogSalePrice)
 
 pred4 <- predict(home_reg2, interval = "predict", newdata = lr_model_test2)
 
-RMSE <- sqrt(mean((pred4[,1] - lr_model_test2$lSalePrice)^2))
+RMSE <- sqrt(mean((pred4[,1] - lr_model_test2$LogSalePrice)^2))
 RMSE
 
 stargazer(home_reg2, type = 'text')
@@ -290,4 +288,16 @@ stargazer(home_reg2, type = 'text')
 car::vif(home_reg2)
 
 
+```
+
+```{r}
+ols_step_forward_p(home_reg2)
+```
+
+```{r}
+ols_step_backward_p(home_reg2)
+```
+
+```{r}
+ols_step_both_p(home_reg2, prem = .05, details = FALSE)
 ```

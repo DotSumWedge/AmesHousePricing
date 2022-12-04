@@ -282,13 +282,14 @@ hdata$CentralAir2 <- as.numeric(factor(hdata$CentralAir,
 
 
 hfit <- lm(lSalePrice ~ .-SalePrice, data = lr_model)
-
 hdata$SalePrice = as.numeric(NA)
+hdata$lSalePrice = as.numeric(NA)
+
 hpred <- predict(hfit, interval = "predict", newdata = hdata)
 
 h_prediction <- data.frame(cbind(hdata$Id, hpred[,1]))
 
-names(h_prediction) <- c("ID", "MonthlyIncome")
+names(h_prediction) <- c("ID", "SalePrice")
 
 
 write.csv(h_prediction, file = "./housePred.csv", row.names = FALSE)

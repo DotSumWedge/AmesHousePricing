@@ -245,7 +245,81 @@ car::vif(home_reg2)
 ```{r}
 hdata <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
 
+# The data contain many NA values. These NA values are not necessarily missing data, but can be thought of as
+# a missing feature of certain homes.
 
+hdata$Fence <- as.character(hdata$Fence)
+hdata$Fence[is.na(hdata$Fence)] <- "None"
+hdata$Fence <- as.factor(hdata$Fence)
+
+# MSZoning: Identifies the general zoning classification of the sale.
+hdata$MSZoning <- as.character(hdata$MSZoning)
+hdata$MSZoning[is.na(hdata$MSZoning)] <- "None"
+hdata$MSZoning <- as.factor(hdata$MSZoning)
+
+# Exterior1st: Exterior covering on house
+hdata$Exterior1st <- as.character(hdata$Exterior1st)
+hdata$Exterior1st[is.na(hdata$Exterior1st)] <- "None"
+hdata$Exterior1st <- as.factor(hdata$Exterior1st)
+
+#Exterior2nd: Exterior covering on house (if more than one material)
+hdata$Exterior2nd <- as.character(hdata$Exterior2nd)
+hdata$Exterior2nd[is.na(hdata$Exterior2nd)] <- "None"
+hdata$Exterior2nd <- as.factor(hdata$Exterior2nd)
+
+hdata$GarageType <- as.character(hdata$GarageType)
+hdata$GarageType[is.na(hdata$GarageType)] <- "None"
+hdata$GarageType <- as.factor(hdata$GarageType)
+                                              
+hdata$FireplaceQu <- as.character(hdata$FireplaceQu)
+hdata$FireplaceQu[is.na(hdata$FireplaceQu)] <- "None"
+hdata$FireplaceQu <- as.factor(hdata$FireplaceQu)
+
+hdata$Alley <- as.character(hdata$Alley)
+hdata$Alley[is.na(hdata$Alley)] <- "None"
+hdata$Alley <- as.factor(hdata$Alley)
+
+# hdata$BsmtQual <- as.character(AmesHouesingDataFrame$BsmtQual)
+# hdata$BsmtQual[is.na(hdata$BsmtQual)] <- "None"
+# hdata$BsmtQual <- as.factor(hdata$BsmtQual)
+
+hdata$BsmtCond <- as.character(hdata$BsmtCond)
+hdata$BsmtCond[is.na(hdata$BsmtCond)] <- "None"
+hdata$BsmtCond <- as.factor(hdata$BsmtCond)
+
+hdata$BsmtExposure <- as.character(hdata$BsmtExposure)
+hdata$BsmtExposure[is.na(hdata$BsmtExposure)] <- "None"
+hdata$BsmtExposure <- as.factor(hdata$BsmtExposure)
+
+hdata$BsmtFinType1 <- as.character(hdata$BsmtFinType1)
+hdata$BsmtFinType1[is.na(hdata$BsmtFinType1)] <- "None"
+hdata$BsmtFinType1 <- as.factor(hdata$BsmtFinType1)
+
+hdata$BsmtFinType2 <- as.character(hdata$BsmtFinType2)
+hdata$BsmtFinType2[is.na(hdata$BsmtFinType2)] <- "None"
+hdata$BsmtFinType2<- as.factor(hdata$BsmtFinType2)
+
+hdata$GarageFinish <- as.character(hdata$GarageFinish)
+hdata$GarageFinish[is.na(hdata$GarageFinish)] <- "None"
+hdata$GarageFinish <- as.factor(hdata$GarageFinish)
+
+hdata$GarageQual <- as.character(hdata$GarageQual)
+hdata$GarageQual[is.na(hdata$GarageQual)] <- "None"
+hdata$GarageQual <- as.factor(hdata$GarageQual)
+
+hdata$GarageCond <- as.character(hdata$GarageCond)
+hdata$GarageCond[is.na(hdata$GarageCond)] <- "None"
+hdata$GarageCond <- as.factor(hdata$GarageCond)
+
+#MiscFeature: Miscellaneous feature not covered in other categories
+hdata$MiscFeature <- as.character(hdata$MiscFeature)
+hdata$MiscFeature[is.na(hdata$MiscFeature)] <- "None"
+hdata$MiscFeature <- as.factor(hdata$MiscFeature)                               
+
+# MasVnrType: Masonry veneer type
+hdata$MasVnrType <- as.character(hdata$MasVnrType)
+hdata$MasVnrType[is.na(hdata$MasVnrType)] <- "None"
+hdata$MasVnrType <- as.factor(hdata$MasVnrType)
 
 hdata$LogX1stFlrSF = log(hdata$X1stFlrSF + 1)
 hdata$LogX2ndFlrSF = log(hdata$X2ndFlrSF + 1)
@@ -282,15 +356,18 @@ hdata$CentralAir2 <- as.numeric(factor(hdata$CentralAir,
 
 
 hfit <- lm(lSalePrice ~ .-SalePrice, data = lr_model)
+summary(hfit)
 hdata$SalePrice = as.numeric(NA)
 hdata$lSalePrice = as.numeric(NA)
 
-hpred <- predict(hfit, interval = "predict", newdata = hdata)
+hpred <- predict(hfit, interval = "predict", newdata = hdata) # na.action = ? goes here
 
-h_prediction <- data.frame(cbind(hdata$Id, hpred[,1]))
+h_prediction <- data.frame(cbind(hdata$Id, exp(hpred[,1]))) # the exp() is the back transform 
+
 
 names(h_prediction) <- c("ID", "SalePrice")
 
+h_prediction
 
 write.csv(h_prediction, file = "./housePred.csv", row.names = FALSE)
 

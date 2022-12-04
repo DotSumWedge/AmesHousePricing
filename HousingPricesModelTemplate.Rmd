@@ -199,14 +199,19 @@ head(AmesHouesingDataFrame)
 ```
 
 ```{r}
-# bringing in some of the feats for trial in model...
-# still using basic stuff. 
+# Final Feagures
 model_var = c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
               'ExterCondNum','LogTotalBsmtSF','HeatingQCNum', 
-              'CentralAirNum','BedroomAbvGr','KitchenAbvGr',
-              'TotRmsAbvGrd','Fireplaces', 'LogGarageArea',
-              'LogOpenPorchSF','YrSold', "LogGrLivArea","LogWoodDeckSF",
-              "LogScreenPorch","LogLotArea","LogMasVnrArea")
+              'BedroomAbvGr','Fireplaces', 'LogGarageArea', 
+              "LogGrLivArea","LogWoodDeckSF","LogScreenPorch","LogLotArea")
+
+# initial list of variables to consider
+  # c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
+  #             'ExterCondNum','LogTotalBsmtSF','HeatingQCNum',
+  #             'CentralAirNum','BedroomAbvGr','KitchenAbvGr',
+  #             'TotRmsAbvGrd','Fireplaces', 'LogGarageArea',
+  #             'LogOpenPorchSF','YrSold', "LogGrLivArea","LogWoodDeckSF",
+  #             "LogScreenPorch","LogLotArea","LogMasVnrArea")
 
 lr_model = AmesHouesingDataFrame[,model_var]
 

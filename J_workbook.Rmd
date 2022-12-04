@@ -33,7 +33,9 @@ library(stargazer)
 library(car)
 library(leaps)
 library(forecast)
+
 AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv", header = TRUE)
+
 AmesHouesingDataFrame_test <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
 
 ```
@@ -99,8 +101,6 @@ AmesHouesingDataFrame$LogGarageArea = log(AmesHouesingDataFrame$GarageArea + 1)
 AmesHouesingDataFrame$LogMasVnrArea = log(AmesHouesingDataFrame$MasVnrArea + 1)
 
 
-
-names(AmesHouesingDataFrame)
 # w/o messing around too much with transforms etc. I want to get 
 # baseline vars together that may have an impact on prices of homes. 
 home_vars <- c('Id','MSZoning','Utilities', 'Neighborhood','BldgType','HouseStyle',
@@ -202,7 +202,6 @@ adj_var <- c("OverallQual", "LogGrLivArea","YearBuilt","LogLotArea",
              "LogWoodDeckSF", "SalePrice")
 
 
-
 lr_model2 <- home_train_vars[,adj_var]
 lr_model2$lSalePrice <- log(lr_model2$SalePrice)
 
@@ -212,7 +211,7 @@ lr_model_train2 <- lr_model2[train.index,]
 lr_model_test2 <- lr_model2[-train.index,]
 
 home_reg2 <- lm(lSalePrice ~ . -SalePrice, data = lr_model_train2)
-summary(home_reg2)
+
 
 
 pred3 <- predict(home_reg2,lr_model_test2,type = "response")
@@ -232,6 +231,56 @@ RMSE
 stargazer(home_reg2, type = 'text')
 
 car::vif(home_reg2)
+
+```
+
+```{r}
+hdata <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
+
+hdata$LogX1stFlrSF = log(hdata$X1stFlrSF + 1)
+hdata$LogX2ndFlrSF = log(hdata$X2ndFlrSF + 1)
+hdata$LogGrLivArea = log(hdata$GrLivArea + 1)
+
+hdata$LogTotalBsmtSF = log(hdata$TotalBsmtSF + 1)
+hdata$LogBsmtUnfSF = log(hdata$BsmtUnfSF + 1)
+
+hdata$LogWoodDeckSF = log(hdata$WoodDeckSF + 1)
+hdata$LogOpenPorchSF = log(hdata$OpenPorchSF + 1)
+hdata$LogX3SsnPorch = log(hdata$X3SsnPorch + 1)
+hdata$LogScreenPorch = log(hdata$ScreenPorch + 1)
+
+hdata$LogLotArea = log(hdata$LotArea + 1)
+hdata$LogLotFrontage = log(hdata$LotFrontage + 1)
+
+hdata$LogPoolArea = log(hdata$PoolArea + 1)
+
+hdata$LogGarageArea = log(hdata$GarageArea + 1)
+
+hdata$LogMasVnrArea = log(hdata$MasVnrArea + 1)
+
+hdata$ExterCond2 <- as.numeric(factor(hdata$ExterCond,
+                                                levels = c("Ex","Gd","TA","Fa","Po"),
+                                                labels = c(5,4,3,2,1), ordered = TRUE))
+
+hdata$HeatingQC2 <- as.numeric(factor(hdata$HeatingQC, 
+                                  levels = c("Ex", "Gd","TA", "Fa","Po"),
+                                  labels = c(5,4,3,2,1) ,ordered = TRUE))
+
+hdata$CentralAir2 <- as.numeric(factor(hdata$CentralAir, 
+                                  levels = c("N", "Y"),
+                                  labels = c(0,1) ,ordered = TRUE))
+
+
+hfit <- lm(lSalePrice ~ .-SalePrice, data = lr_model)
+# not sure why this is getting stuck.. obviously error says
+# it is becuase SalePrice is not found... but it shouldn't be found in hdata since it's a "test" set...idk maybe it's just late. 
+hpred <- predict(hfit, interval = "predict", newdata = hdata)
+
+h_prediction <- data.frame(cbind(hdata$ID, hpred[,1]))
+names(h_prediction) <- c("ID", "MonthlyIncome")
+
+
+
 
 
 ```

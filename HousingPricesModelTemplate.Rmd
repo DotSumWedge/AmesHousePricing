@@ -232,6 +232,8 @@ AmesHouesingDataFrame$LandSlopeNum <- as.numeric(factor(AmesHouesingDataFrame$La
 ```
 
 ```{r}
+# Removed outliers
+
 AmesHouesingDataFrame
 Outliers = AmesHouesingDataFrame[order(-AmesHouesingDataFrame$GrLivArea),]
 Outliers = Outliers[1:2,]
@@ -241,7 +243,7 @@ AmesHouesingDataFrame
 ```
 
 ```{r}
-# Final Feagures
+# Final Features in Cyclone model
 model_var = c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
               'ExterCondNum','LogTotalBsmtSF','HeatingQCNum', 
               'BedroomAbvGr','Fireplaces', 'LogGarageArea', 
@@ -255,97 +257,8 @@ model_var = c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
   #             'LogOpenPorchSF','YrSold', "LogGrLivArea","LogWoodDeckSF",
   #             "LogScreenPorch","LogLotArea","LogMasVnrArea")
 
-lr_model = AmesHouesingDataFrame[,model_var]
-
-set.seed(4)
-train.index = sample(c(1:dim(lr_model)[1]), dim(lr_model)[1]*0.8)
-lr_model_train = lr_model[train.index,]
-lr_model_test = lr_model[-train.index,]
-
-home_regression = lm(LogSalePrice~.-LogSalePrice, data = lr_model_train)
-summary(home_regression)
-
-# note "response" this will give you numerical result min/1stq /median/mean/3rd q/ max/ NA's
-pred1 = predict(home_regression, lr_model_test, type = "response")
-# summary(pred1)
-
-residuals = lr_model_test$LogSalePrice - pred1
-
-home_regression_pred = data.frame("Predicted" = pred1, "Actual" = lr_model_test$LogSalePrice, "Residual" = residuals)
-
-# returns ME-RMSE-MAE-MPE-MAPE
-accuracy(pred1, lr_model_test$LogSalePrice)
-
-# note "predict" this returns fit/lwr/upr
-pred2 = predict(home_regression, interval = "predict", newdata = lr_model_test) 
-# summary(pred2)
-
-stargazer(home_regression, type = 'text')
-
-car::vif(home_regression)
-```
-
-```{r}
-ols_step_forward_p(home_regression)
-```
-
-```{r}
-ols_step_backward_p(home_regression)
-```
-
-```{r}
-ols_step_both_p(home_regression, prem = .05, details = FALSE)
-```
-
-Second Model 
-```{r}
-# adjusted vars to use in model after above:
-
-adj_var <- c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
-              'LogLotArea','LogTotalBsmtSF','HeatingQCNum', 
-              'BedroomAbvGr','Fireplaces', 'LogGarageArea', 
-              "LogGrLivArea","LogWoodDeckSF","LogScreenPorch")
-
-lr_model2 = AmesHouesingDataFrame[,adj_var]
-
-set.seed(4)
-train.index <- sample(c(1:dim(lr_model2)[1]), dim(lr_model2)[1]*0.8)
-lr_model_train2 <- lr_model2[train.index,]
-lr_model_test2 <- lr_model2[-train.index,]
-
-home_reg2 <- lm(LogSalePrice~ . -LogSalePrice, data = lr_model_train2)
-summary(home_reg2)
-
-pred3 <- predict(home_reg2,lr_model_test2,type = "response")
-
-residuals2 <- lr_model_test2$LogSalePrice - pred3
-
-home_reg_pred2 <- data.frame("Predicted" = pred3, "Actual" = lr_model_test2$LogSalePrice, "Residual" = residuals2)
-
-# returns ME-RMSE-MAE-MPE-MAPE
-accuracy(pred3, lr_model_test2$LogSalePrice)
-
-pred4 <- predict(home_reg2, interval = "predict", newdata = lr_model_test2)
-
-RMSE <- sqrt(mean((pred4[,1] - lr_model_test2$LogSalePrice)^2))
-RMSE
-
-stargazer(home_reg2, type = 'text')
-
-car::vif(home_reg2)
-
 
 ```
-
-```{r}
-ols_step_forward_p(home_reg2)
-```
-
-```{r}
-ols_step_backward_p(home_reg2)
-```
-
-
 
 ```{r}
 hdata <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
@@ -459,90 +372,4 @@ hdata$HeatingQCNum <- as.numeric(factor(hdata$HeatingQC,
 hdata$CentralAirNum <- as.numeric(factor(hdata$CentralAir, 
                                   levels = c("N", "Y"),
                                   labels = c(0,1) ,ordered = TRUE))
-
-
-hfit <- lm(LogSalePrice ~ .-LogSalePrice, data = lr_model2)
-summary(hfit)
-hdata$SalePrice = as.numeric(NA)
-hdata$lSalePrice = as.numeric(NA)
-
-hpred <- predict(hfit, interval = "predict", newdata = hdata, na.action = na.omit ) # na.action = ? goes here
-
-h_prediction <- data.frame(cbind(hdata$Id, exp(hpred[,1]))) # the exp() is the back transform 
-
-
-names(h_prediction) <- c("ID", "SalePrice")
-
-h_prediction
-
-write.csv(h_prediction, file = "./housePred12.csv", row.names = FALSE)
-
-```
-
-
-```{r}
-ols_step_both_p(home_reg2, prem = .05, details = FALSE)
-
-model_stepwise <- lm(LogSalePrice ~ OverallQual + LogGrLivArea + YearBuilt + LogLotArea +
-                       OverallCond + BedroomAbvGr + LogTotalBsmtSF + Fireplaces +
-                       LogGarageArea + HeatingQCNum + LogScreenPorch + LogWoodDeckSF, data = lr_model2)
-
-summary(model_stepwise)
-hdata$SalePrice = as.numeric(NA)
-hdata$lSalePrice = as.numeric(NA)
-swPred <- predict(model_stepwise, interval = "predict", newdata = hdata, na.action = na.omit)
-
-swPrediction <- data.frame(cbind(hdata$Id, exp(swPred[,1])))
-
-names(swPrediction) <- c("ID", "SalePrice")
-
-swPrediction
-
-write.csv(swPrediction, file = "./stepwisePred.csv", row.names = FALSE)
-```
-
-
-```{r}
-# library(epiR)
-# data <- as.table(matrix(c(670,202,74,640), nrow = 2, byrow = TRUE))
-# rval <- epi.tests(data, conf.level = 0.95)
-# print(rval)  
-
-model_fit_stats <- function(linear.model) {
-  r.sqr <- summary(linear.model)$r.squared
-  adj.r.sqr <- summary(linear.model)$adj.r.squared
-  pre.r.sqr <- pred_r_squared(linear.model)
-  PRESS <- PRESS(linear.model)
-  return.df <- data.frame(r.squared = r.sqr, adj.r.squared = adj.r.sqr, pred.r.squared = pre.r.sqr, press = PRESS)
-  return(return.df)
-}
-model_fit_stats(model_stepwise)
-
-pred_r_squared <- function(linear.model) {
-  #' Use anova() to get the sum of squares for the linear model
-  lm.anova <- anova(linear.model)
-  #' Calculate the total sum of squares
-  tss <- sum(lm.anova$'Sum Sq')
-  # Calculate the predictive R^2
-  pred.r.squared <- 1-PRESS(linear.model)/(tss)
-  
-  return(pred.r.squared)
-}
-pred_r_squared(model_stepwise) # pred r2
-
-PRESS <- function(linear.model) {
-  #' calculate the predictive residuals
-  pr <- residuals(linear.model)/(1-lm.influence(linear.model)$hat)
-  #' calculate the PRESS
-  PRESS <- sum(pr^2)
-  
-  return(PRESS)
-}
-
-PRESS(model_stepwise)
-
-AIC(model_stepwise)
-
-
-
 ```

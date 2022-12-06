@@ -17,14 +17,75 @@ library(plyr)
 library(ggcorrplot)
 library(gridExtra)
 library(olsrr)
+library(gbm)
+library(mice)
+library(moments)
+library(janitor)
+library(readxl)
+library(GGally)
+library(treemapify)
+library(grid)
+library(scales)
+library(corrplot)
+library(class)
+library(caret)
+library(pROC)
+library(e1071)
+library(kableExtra)
+library(StepReg)
+library(ggthemes)
+library(stargazer)
+library(car)
+library(leaps)
+library(epiR)
+library(forecast)
+library(ggplot2)
+library(mosaic)
+library(dplyr)
+library(GGally)
+library(gtools)
+library(ggfortify)
+library(readr)
+library(dplyr)
+library(ggpubr)
+library(modelr)
+library(corrplot)
+library(caret)
+library(mlbench)
+library(scales)
+library(olsrr)
+library(tidyverse)
+library(RColorBrewer)
+library(tidyverse)
+library(ggplot2)
+library(scales)
+library(pwr)
+library(agricolae)
+library(huxtable)
+library(lawstat)
+library(lsmeans)
+library(nCDunnett)
+library(dplyr)
+library(WDI)
+library(investr)
+library(multcomp)
+library(pairwiseCI)
+library(DescTools)
+library(GGally)
+library(olsrr)
+library(lmtest)
+
 ```
 
 ```{r}
-AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+#AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
+#AmesHouesingTestDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv"))
 
-#AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
+AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
+AmesHouesingDataFrame_test<-read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv")
 
 #AmesHouesingDataFrame <- read.csv("C:/Users/nicol/OneDrive/Desktop/train1.csv")
+#AmesHouesingDataFrame <- read.csv("C:/Users/nicol/OneDrive/Desktop/test1.csv")
 ```
 
 ```{r}
@@ -172,30 +233,316 @@ AmesHouesingDataFrame$LandSlopeNum <- as.numeric(factor(AmesHouesingDataFrame$La
 
 ```{r}
 AmesHouesingDataFrame
+Outliers = AmesHouesingDataFrame[order(-AmesHouesingDataFrame$GrLivArea),]
+Outliers = Outliers[1:2,]
+Outliers
+AmesHouesingDataFrame = AmesHouesingDataFrame[!(AmesHouesingDataFrame$Id=="524" | AmesHouesingDataFrame$Id=="1299"),]
+AmesHouesingDataFrame
 ```
 
 ```{r}
-model = lm(LogSalePrice~LogGrLivArea+LogTotalBsmtSF+LogWoodDeckSF+LogOpenPorchSF+LogScreenPorch+LogLotArea+LogGarageArea+LogMasVnrArea, AmesHouesingDataFrame)
+# Final Feagures
+model_var = c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
+              'ExterCondNum','LogTotalBsmtSF','HeatingQCNum', 
+              'BedroomAbvGr','Fireplaces', 'LogGarageArea', 
+              "LogGrLivArea","LogWoodDeckSF","LogScreenPorch","LogLotArea")
 
-summary(model)
+# initial list of variables to consider
+  # c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
+  #             'ExterCondNum','LogTotalBsmtSF','HeatingQCNum',
+  #             'CentralAirNum','BedroomAbvGr','KitchenAbvGr',
+  #             'TotRmsAbvGrd','Fireplaces', 'LogGarageArea',
+  #             'LogOpenPorchSF','YrSold', "LogGrLivArea","LogWoodDeckSF",
+  #             "LogScreenPorch","LogLotArea","LogMasVnrArea")
+
+lr_model = AmesHouesingDataFrame[,model_var]
+
+set.seed(4)
+train.index = sample(c(1:dim(lr_model)[1]), dim(lr_model)[1]*0.8)
+lr_model_train = lr_model[train.index,]
+lr_model_test = lr_model[-train.index,]
+
+home_regression = lm(LogSalePrice~.-LogSalePrice, data = lr_model_train)
+summary(home_regression)
+
+# note "response" this will give you numerical result min/1stq /median/mean/3rd q/ max/ NA's
+pred1 = predict(home_regression, lr_model_test, type = "response")
+# summary(pred1)
+
+residuals = lr_model_test$LogSalePrice - pred1
+
+home_regression_pred = data.frame("Predicted" = pred1, "Actual" = lr_model_test$LogSalePrice, "Residual" = residuals)
+
+# returns ME-RMSE-MAE-MPE-MAPE
+accuracy(pred1, lr_model_test$LogSalePrice)
+
+# note "predict" this returns fit/lwr/upr
+pred2 = predict(home_regression, interval = "predict", newdata = lr_model_test) 
+# summary(pred2)
+
+stargazer(home_regression, type = 'text')
+
+car::vif(home_regression)
 ```
 
 ```{r}
+ols_step_forward_p(home_regression)
+```
+
+```{r}
+ols_step_backward_p(home_regression)
+```
+
+```{r}
+ols_step_both_p(home_regression, prem = .05, details = FALSE)
+```
+
+Second Model 
+```{r}
+# adjusted vars to use in model after above:
+
+adj_var <- c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
+              'LogLotArea','LogTotalBsmtSF','HeatingQCNum', 
+              'BedroomAbvGr','Fireplaces', 'LogGarageArea', 
+              "LogGrLivArea","LogWoodDeckSF","LogScreenPorch")
+
+lr_model2 = AmesHouesingDataFrame[,adj_var]
+
+set.seed(4)
+train.index <- sample(c(1:dim(lr_model2)[1]), dim(lr_model2)[1]*0.8)
+lr_model_train2 <- lr_model2[train.index,]
+lr_model_test2 <- lr_model2[-train.index,]
+
+home_reg2 <- lm(LogSalePrice~ . -LogSalePrice, data = lr_model_train2)
+summary(home_reg2)
+
+pred3 <- predict(home_reg2,lr_model_test2,type = "response")
+
+residuals2 <- lr_model_test2$LogSalePrice - pred3
+
+home_reg_pred2 <- data.frame("Predicted" = pred3, "Actual" = lr_model_test2$LogSalePrice, "Residual" = residuals2)
+
+# returns ME-RMSE-MAE-MPE-MAPE
+accuracy(pred3, lr_model_test2$LogSalePrice)
+
+pred4 <- predict(home_reg2, interval = "predict", newdata = lr_model_test2)
+
+RMSE <- sqrt(mean((pred4[,1] - lr_model_test2$LogSalePrice)^2))
+RMSE
+
+stargazer(home_reg2, type = 'text')
+
+car::vif(home_reg2)
+
 
 ```
 
 ```{r}
-
+ols_step_forward_p(home_reg2)
 ```
 
 ```{r}
+ols_step_backward_p(home_reg2)
+```
+
+
+
+```{r}
+hdata <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
+#hdata <- read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv",header = TRUE)
+
+# The data contain many NA values. These NA values are not necessarily missing data, but can be thought of as
+# a missing feature of certain homes.
+
+hdata$Fence <- as.character(hdata$Fence)
+hdata$Fence[is.na(hdata$Fence)] <- "None"
+hdata$Fence <- as.factor(hdata$Fence)
+
+# MSZoning: Identifies the general zoning classification of the sale.
+hdata$MSZoning <- as.character(hdata$MSZoning)
+hdata$MSZoning[is.na(hdata$MSZoning)] <- "None"
+hdata$MSZoning <- as.factor(hdata$MSZoning)
+
+# Exterior1st: Exterior covering on house
+hdata$Exterior1st <- as.character(hdata$Exterior1st)
+hdata$Exterior1st[is.na(hdata$Exterior1st)] <- "None"
+hdata$Exterior1st <- as.factor(hdata$Exterior1st)
+
+#Exterior2nd: Exterior covering on house (if more than one material)
+hdata$Exterior2nd <- as.character(hdata$Exterior2nd)
+hdata$Exterior2nd[is.na(hdata$Exterior2nd)] <- "None"
+hdata$Exterior2nd <- as.factor(hdata$Exterior2nd)
+
+hdata$GarageType <- as.character(hdata$GarageType)
+hdata$GarageType[is.na(hdata$GarageType)] <- "None"
+hdata$GarageType <- as.factor(hdata$GarageType)
+                                              
+hdata$FireplaceQu <- as.character(hdata$FireplaceQu)
+hdata$FireplaceQu[is.na(hdata$FireplaceQu)] <- "None"
+hdata$FireplaceQu <- as.factor(hdata$FireplaceQu)
+
+hdata$Alley <- as.character(hdata$Alley)
+hdata$Alley[is.na(hdata$Alley)] <- "None"
+hdata$Alley <- as.factor(hdata$Alley)
+
+# hdata$BsmtQual <- as.character(AmesHouesingDataFrame$BsmtQual)
+# hdata$BsmtQual[is.na(hdata$BsmtQual)] <- "None"
+# hdata$BsmtQual <- as.factor(hdata$BsmtQual)
+
+hdata$BsmtCond <- as.character(hdata$BsmtCond)
+hdata$BsmtCond[is.na(hdata$BsmtCond)] <- "None"
+hdata$BsmtCond <- as.factor(hdata$BsmtCond)
+
+hdata$BsmtExposure <- as.character(hdata$BsmtExposure)
+hdata$BsmtExposure[is.na(hdata$BsmtExposure)] <- "None"
+hdata$BsmtExposure <- as.factor(hdata$BsmtExposure)
+
+hdata$BsmtFinType1 <- as.character(hdata$BsmtFinType1)
+hdata$BsmtFinType1[is.na(hdata$BsmtFinType1)] <- "None"
+hdata$BsmtFinType1 <- as.factor(hdata$BsmtFinType1)
+
+hdata$BsmtFinType2 <- as.character(hdata$BsmtFinType2)
+hdata$BsmtFinType2[is.na(hdata$BsmtFinType2)] <- "None"
+hdata$BsmtFinType2<- as.factor(hdata$BsmtFinType2)
+
+hdata$GarageFinish <- as.character(hdata$GarageFinish)
+hdata$GarageFinish[is.na(hdata$GarageFinish)] <- "None"
+hdata$GarageFinish <- as.factor(hdata$GarageFinish)
+
+hdata$GarageQual <- as.character(hdata$GarageQual)
+hdata$GarageQual[is.na(hdata$GarageQual)] <- "None"
+hdata$GarageQual <- as.factor(hdata$GarageQual)
+
+hdata$GarageCond <- as.character(hdata$GarageCond)
+hdata$GarageCond[is.na(hdata$GarageCond)] <- "None"
+hdata$GarageCond <- as.factor(hdata$GarageCond)
+
+#MiscFeature: Miscellaneous feature not covered in other categories
+hdata$MiscFeature <- as.character(hdata$MiscFeature)
+hdata$MiscFeature[is.na(hdata$MiscFeature)] <- "None"
+hdata$MiscFeature <- as.factor(hdata$MiscFeature)                               
+
+# MasVnrType: Masonry veneer type
+hdata$MasVnrType <- as.character(hdata$MasVnrType)
+hdata$MasVnrType[is.na(hdata$MasVnrType)] <- "None"
+hdata$MasVnrType <- as.factor(hdata$MasVnrType)
+
+hdata$LogX1stFlrSF = log(hdata$X1stFlrSF + 1)
+hdata$LogX2ndFlrSF = log(hdata$X2ndFlrSF + 1)
+hdata$LogGrLivArea = log(hdata$GrLivArea + 1)
+
+hdata$LogTotalBsmtSF = log(hdata$TotalBsmtSF + 1)
+hdata$LogBsmtUnfSF = log(hdata$BsmtUnfSF + 1)
+
+hdata$LogWoodDeckSF = log(hdata$WoodDeckSF + 1)
+hdata$LogOpenPorchSF = log(hdata$OpenPorchSF + 1)
+hdata$LogX3SsnPorch = log(hdata$X3SsnPorch + 1)
+hdata$LogScreenPorch = log(hdata$ScreenPorch + 1)
+
+hdata$LogLotArea = log(hdata$LotArea + 1)
+hdata$LogLotFrontage = log(hdata$LotFrontage + 1)
+
+hdata$LogPoolArea = log(hdata$PoolArea + 1)
+
+hdata$LogGarageArea = log(hdata$GarageArea + 1)
+
+hdata$LogMasVnrArea = log(hdata$MasVnrArea + 1)
+
+hdata$ExterCondNum <- as.numeric(factor(hdata$ExterCond,
+                                                levels = c("Ex","Gd","TA","Fa","Po"),
+                                                labels = c(5,4,3,2,1), ordered = TRUE))
+
+hdata$HeatingQCNum <- as.numeric(factor(hdata$HeatingQC, 
+                                  levels = c("Ex", "Gd","TA", "Fa","Po"),
+                                  labels = c(5,4,3,2,1) ,ordered = TRUE))
+
+hdata$CentralAirNum <- as.numeric(factor(hdata$CentralAir, 
+                                  levels = c("N", "Y"),
+                                  labels = c(0,1) ,ordered = TRUE))
+
+
+hfit <- lm(LogSalePrice ~ .-LogSalePrice, data = lr_model2)
+summary(hfit)
+hdata$SalePrice = as.numeric(NA)
+hdata$lSalePrice = as.numeric(NA)
+
+hpred <- predict(hfit, interval = "predict", newdata = hdata, na.action = na.omit ) # na.action = ? goes here
+
+h_prediction <- data.frame(cbind(hdata$Id, exp(hpred[,1]))) # the exp() is the back transform 
+
+
+names(h_prediction) <- c("ID", "SalePrice")
+
+h_prediction
+
+write.csv(h_prediction, file = "./housePred12.csv", row.names = FALSE)
 
 ```
 
-```{r}
 
+```{r}
+ols_step_both_p(home_reg2, prem = .05, details = FALSE)
+
+model_stepwise <- lm(LogSalePrice ~ OverallQual + LogGrLivArea + YearBuilt + LogLotArea +
+                       OverallCond + BedroomAbvGr + LogTotalBsmtSF + Fireplaces +
+                       LogGarageArea + HeatingQCNum + LogScreenPorch + LogWoodDeckSF, data = lr_model2)
+
+summary(model_stepwise)
+hdata$SalePrice = as.numeric(NA)
+hdata$lSalePrice = as.numeric(NA)
+swPred <- predict(model_stepwise, interval = "predict", newdata = hdata, na.action = na.omit)
+
+swPrediction <- data.frame(cbind(hdata$Id, exp(swPred[,1])))
+
+names(swPrediction) <- c("ID", "SalePrice")
+
+swPrediction
+
+write.csv(swPrediction, file = "./stepwisePred.csv", row.names = FALSE)
 ```
 
+
 ```{r}
+# library(epiR)
+# data <- as.table(matrix(c(670,202,74,640), nrow = 2, byrow = TRUE))
+# rval <- epi.tests(data, conf.level = 0.95)
+# print(rval)  
+
+model_fit_stats <- function(linear.model) {
+  r.sqr <- summary(linear.model)$r.squared
+  adj.r.sqr <- summary(linear.model)$adj.r.squared
+  pre.r.sqr <- pred_r_squared(linear.model)
+  PRESS <- PRESS(linear.model)
+  return.df <- data.frame(r.squared = r.sqr, adj.r.squared = adj.r.sqr, pred.r.squared = pre.r.sqr, press = PRESS)
+  return(return.df)
+}
+model_fit_stats(model_stepwise)
+
+pred_r_squared <- function(linear.model) {
+  #' Use anova() to get the sum of squares for the linear model
+  lm.anova <- anova(linear.model)
+  #' Calculate the total sum of squares
+  tss <- sum(lm.anova$'Sum Sq')
+  # Calculate the predictive R^2
+  pred.r.squared <- 1-PRESS(linear.model)/(tss)
+  
+  return(pred.r.squared)
+}
+pred_r_squared(model_stepwise) # pred r2
+
+PRESS <- function(linear.model) {
+  #' calculate the predictive residuals
+  pr <- residuals(linear.model)/(1-lm.influence(linear.model)$hat)
+  #' calculate the PRESS
+  PRESS <- sum(pr^2)
+  
+  return(PRESS)
+}
+
+PRESS(model_stepwise)
+
+AIC(model_stepwise)
+
+
 
 ```

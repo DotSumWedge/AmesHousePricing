@@ -306,6 +306,15 @@ adj_var <- c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
               'BedroomAbvGr','Fireplaces', 'LogGarageArea', 
               "LogGrLivArea","LogWoodDeckSF","LogScreenPorch")
 
+
+
+# - TEST VAR FOR SLIGHTLY IMPROVED KAGGLE SCORE
+# adj_var <- c("LogSalePrice","OverallQual","GarageCars","GrLivArea")
+# 
+# adj_var <- c("OverallQual","YearBuilt","YearRemodAdd","TotalBsmtSF",
+#                "GrLivArea","GarageCars","GarageArea", "LogSalePrice")
+
+
 lr_model2 = AmesHouesingDataFrame[,adj_var]
 
 set.seed(4)

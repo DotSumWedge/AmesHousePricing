@@ -28,7 +28,7 @@ AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHouseP
 
 ```{r}
 # Perform log transformations on columns that require it which was determined from the various *EDA.Rmd files and listed in Notes.txt
-AmesHouesingDataFrame %>% filter(Neighborhood == )
+
 AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
 
 AmesHouesingDataFrame$LogX1stFlrSF = log(AmesHouesingDataFrame$X1stFlrSF + 1)
@@ -249,6 +249,21 @@ AmesHouesingDataFrame$CentralAirNum <- as.numeric(factor(AmesHouesingDataFrame$C
 ```{r}
 # setting up the correlation plot
 
+# created from int for cor:
+corr_vars <- c("OverallQual","YearBuilt","YearRemodAdd","TotalBsmtSF","X1stFlrSF",
+               "GrLivArea","GarageCars","GarageArea", "LogSalePrice","SalePrice")
+
+
+# test for all int
+corr_vars <- c("MSSubClass", "LotFrontage","LotArea","OverallQual","OverallCond",
+               "YearBuilt","YearRemodAdd", "MasVnrArea","TotalBsmtSF","X1stFlrSF","X2ndFlrSF",
+               "GrLivArea","BsmtFullBath","BsmtHalfBath","BedroomAbvGr","KitchenAbvGr",
+               "TotRmsAbvGrd","Fireplaces","GarageCars","GarageArea","WoodDeckSF",
+               "OpenPorchSF","EnclosedPorch","ScreenPorch","PoolArea","MiscVal","MoSold",
+               "YrSold","SalePrice", "LogSalePrice")
+
+
+
 # selecting var for exploration:
 corr_vars <- c("SalePrice", "OverallQual", "OverallCond", "YearBuilt",
                "ExterCondNum", "TotalBsmtSF", "HeatingQCNum","CentralAirNum",
@@ -308,6 +323,5 @@ plot4 <- AmesHouesingDataFrame %>%
 # and plot them on a single pane. 
 grid.arrange(plot1, plot2, plot3, plot4)
 ```
-
 
 

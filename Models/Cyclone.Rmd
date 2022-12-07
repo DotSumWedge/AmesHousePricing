@@ -306,7 +306,9 @@ adj_var <- c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
               'BedroomAbvGr','Fireplaces', 'LogGarageArea', 
               "LogGrLivArea","LogWoodDeckSF","LogScreenPorch")
 
-
+# - another test var set based on correlation
+# result Kaggle : .24714
+adj_var <- c("LogSalePrice","OverallQual","GarageArea","LogGrLivArea")
 
 # - TEST VAR FOR SLIGHTLY IMPROVED KAGGLE SCORE
 # adj_var <- c("LogSalePrice","OverallQual","GarageCars","GrLivArea")

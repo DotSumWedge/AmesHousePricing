@@ -1,0 +1,180 @@
+---
+title: "Analysis 1"
+author: "Joey Hernandez"
+date: "2022-12-08"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(olsrr)
+homedf <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
+```
+client only sells homes in NAmes, Edwards, and BrkSide neighborhoods
+want an estimate of how the SalePrice of the home is related to the
+GrLivArea and if SalePrice  depends on which neighborhood the house is located in.
+
+* First we check assumptions of data for SalePrice and GrLivArea. The response var
+for our study will be SalePrice
+
+```{r}
+plot(homedf$GrLivArea, homedf$SalePrice)
+```
+In plotting the GrLivArea / SalePrice scatter we see that there are some outliers in the data. 
+we will proceed to visually inspect these observations in the scope of the Question of interest neighborhoods 
+before we decide to proceed with any transforamtions of the data. 
+
+```{r}
+n3homedf <- homedf %>% filter(Neighborhood == "NAmes" | Neighborhood =="Edwards" | Neighborhood =="BrkSide")
+
+plot(n3homedf$GrLivArea, n3homedf$SalePrice)
+
+
+```
+It turns out the outliers within the data set lie in the neighborhoods we are investigating. 
+To address these concerns we will apply a transformation to the data to see if the outliers 
+can be addressed that way. 
+
+```{r}
+plot(log(n3homedf$GrLivArea), n3homedf$SalePrice)
+plot(log(n3homedf$GrLivArea), log(n3homedf$SalePrice))
+```
+the data seems to be much more visually appropriate using a linear-log transformation,
+and even more so using a log-log transformation. We will proceed with a log-log transformation
+and create a linear regression line so that we can further test assumptions of the data. 
+```{r}
+homefit <- lm(log(SalePrice)~log(GrLivArea), data = n3homedf)
+
+ols_plot_diagnostics(homefit)
+
+```
+as it turns out the diagnostics of our fit still show some outliers present. 
+the cook's D chart also show that we have a couple points that are low residual
+and high leverage. We will investigate these outliers to see if it makes sense to keep 
+them in the data or if they really are "normal" and expected. 
+An additional option for us is to narrow the scope of our model and consider that 
+maybe those points are of a different "class" or "category" than the bulk of our data. 
+
+```{r}
+# exploring the outliers
+n3homedf %>% ggplot(aes(log(GrLivArea), log(SalePrice), color = as.factor(SaleCondition == "Partial"))) +
+  geom_point()
+
+n3homedf %>% ggplot(aes(log(GrLivArea), log(SalePrice), color = as.factor(SaleType))) +
+  geom_point()
+
+n3homedf %>% ggplot(aes(log(GrLivArea), log(SalePrice), color = as.factor(YrSold == 2008 | YrSold == 2007))) + geom_point()
+
+
+# dim(n3homedf %>% filter(SaleCondition == "Partial"))
+# dim(n3homedf)
+```
+upon further investigation of the 2 outliers that we are assessing. It appears that both homes were of 
+a "New" sale type, during 2007 and 2008, both of which are years in which new homes would be expected to have sold for losses or abnormal pricing due to the recession and housing market collapse. 
+
+The two home were also of a sale condition "Parital". a "Partial" Sale condition only make up 1% of the home sale condition types within the home sales for these 3 neighborhoods. 
+
+In conclusion, the abnormality of the sales of these two homes seems to be attributed to circumstances 
+that are not what is to be expected under normal market conditions and predictions.
+We will view the diagnositcs for the data with and without the outliers to make our final determination
+on whether to include or exclude these points. 
+
+```{r}
+# to find outliers
+Outliers = homedf[order(-homedf$GrLivArea),]
+Outliers = Outliers[1:2,]
+# discovered the outliers
+
+# creating a new df with no outliers to see if we can better fit the assumptions needed to proceed with our analysis. 
+homedf_noout = homedf[!(homedf$Id=="524" | homedf$Id=="1299"),]
+n3homedf_noout <- homedf_noout %>% filter(Neighborhood == "NAmes"|Neighborhood == "Edwards"| Neighborhood == "BrkSide")
+```
+
+```{r}
+fit_no_outliers <- lm(log(SalePrice)~log(GrLivArea), data = n3homedf_noout)
+
+ols_plot_diagnostics(fit_no_outliers)
+
+```
+in addition to the justification to leave out our 2 discovered ourliers, the data without the outliers also better fits the model assumptions for linear regression. we will proceed without these two points.
+
+
+
+```{r}
+plot(n3homedf_noout$GrLivArea, n3homedf_noout$SalePrice)
+plot(log(n3homedf_noout$GrLivArea), log(n3homedf_noout$SalePrice))
+```
+The data without transformation looks to be much more visually acceptable. There does however seem to be
+evidence of increasing standard deviation. After performing a LOG-LOG transformation on the data, it appears
+to be much more visually appropriate. Once again we will now proceed with creating a fit to determine if the 
+diagnostics of the linear model fit our assumptions.
+
+```{r}
+no_outlier_fit <- lm(log(SalePrice)~log(GrLivArea), data = n3homedf_noout)
+ols_plot_diagnostics(no_outlier_fit)
+
+```
+it appears that observation 135 is pulling the data to the left quite a bit. we will investigate this point
+to better understand if it makes sense to keep in the data. 
+
+```{r}
+# color - LAND SLOPE - MOD - MODERATE SLOPE
+n3homedf_noout %>% ggplot(aes(log(GrLivArea),log(SalePrice),  color = as.factor(LandSlope))) +
+  geom_point()
+
+
+# color - LAND CONTOUR - HLS - HILLSIDE - SIGNI. SLOPE FROM SIDE TO SIDE
+n3homedf_noout %>% ggplot(aes(log(GrLivArea),log(SalePrice),  color = as.factor(LandContour))) +
+  geom_point() 
+
+
+# color - LOT SHAPE - REG (not a detriment for us here)
+n3homedf_noout %>% ggplot(aes(log(GrLivArea),log(SalePrice),  color = as.factor(LotShape))) +
+  geom_point() 
+
+# color - MS ZONING - RL (not a detriment for us here) - RESIDENTIAL LOW DENSITY
+n3homedf_noout %>% ggplot(aes(log(GrLivArea),log(SalePrice),  color = as.factor(MSZoning))) +
+  geom_point() 
+
+# color - MS SUBCLASS - 20 - 1 story 1946 & Newer & newer all styles
+n3homedf_noout %>% ggplot(aes(log(GrLivArea),log(SalePrice),  color = as.factor(MSSubClass == 20))) +
+  geom_point() 
+
+# color - ELECTRICAL - FuseF - 60 AMP Fuse Box and mostly Romex Wiring (Fair)
+n3homedf_noout %>% ggplot(aes(log(GrLivArea),log(SalePrice),  color = Electrical == "FuseF")) +
+  geom_point() 
+
+```
+After visually understanding some of the features of the outlier home in question, 
+it is to our understanding that while the home is not "part of" the majority of the dataset 
+in terms of where most of the point lie, it is not due to some abnormality that we can see or 
+understand given the data. In other words, the reasons for the abnormal point of this data
+seem to be due to certain features of the home/land/plot and the small GrLivArea (squarefootage), 
+so we will proceed with this point in the data and may consider a model which includes and excludes it. 
+
+
+Next we will build a model that will determine if the squarefootage of the living area and its Sale Price 
+is dependent on which Neighborhood it is in. 
+
+To do this it will help first to test if all the regression lines are parallel. if they are, then we can 
+check for a differnce in Sale Price across all Neighborhoods by looking at the intercept. 
+```{r}
+# full model
+# creating log var
+n3homedf_noout$logGLA <- log(n3homedf_noout$GrLivArea)
+n3homedf_noout$logSP <- log(n3homedf_noout$SalePrice)
+# setting Neighborhood as factor to use as ref. 
+n3homedf_noout$Neighborhood <- as.factor(n3homedf_noout$Neighborhood)
+
+full_model <- lm(logSP ~ logGLA * relevel(Neighborhood, ref = "Edwards"), data = n3homedf_noout)
+ols_plot_diagnostics(full_model)
+summary(full_model) # adj.R2 = .5216
+
+
+# Reduced Model
+red_model <- lm(logSP~logGLA + relevel(Neighborhood, ref = "Edwards"), data = n3homedf_noout)
+ols_plot_diagnostics(red_model)
+summary(red_model) # adj. R2 = .5002
+
+```
+after analysis of the full and reduced model, because the adjusted R^2 favors the model
+with the interaction parameters we will proceed with the full model going forward.  

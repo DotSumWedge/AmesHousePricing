@@ -1,0 +1,558 @@
+---
+title: "Project 1 DS6371"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Libaries
+library(dplyr)
+library(ggplot2)
+library(car)
+library(caret)
+library(scales)
+library(tidyr)
+library(readr)
+library(purrr)
+library(forcats)
+library(imputeMissings)
+library(tidyverse)
+library(leaps)
+library(MASS)
+library(olsrr)
+library(asbio)
+library(DAAG)
+library(tidyverse)
+library(ggplot2)
+library(scales)
+library(pwr)
+library(agricolae)
+library(huxtable)
+library(lawstat)
+library(lsmeans)
+library(nCDunnett)
+library(dplyr)
+library(WDI)
+library(investr)
+library(multcomp)
+library(pairwiseCI)
+library(DescTools)
+library(GGally)
+library(olsrr)
+library(kableExtra)
+```
+
+
+
+
+```{r}
+#read in data 
+#train <- read.csv("C:/Users/ASUSL/OneDrive/Desktop/train1.csv",stringsAsFactors = T) #train
+train <- read.csv("C:/Users/ASUSL/OneDrive/Desktop/train1.csv",stringsAsFactors = F) #train
+#test <- read.csv("C:/Users/ASUSL/OneDrive/Desktop/test1.csv",stringsAsFactors = T) #test
+test <- read.csv("C:/Users/ASUSL/OneDrive/Desktop/test1.csv",stringsAsFactors = F) #test
+
+```
+
+
+```{r}
+#Select data
+
+neighborhoodDatTrain <- dplyr::filter(train,Neighborhood =="Edwards" | Neighborhood =="NAmes" | Neighborhood == "BrkSide")
+neighborhoodDatTrain <- neighborhoodDatTrain[,c(13,47,81)]
+
+
+neighborhoodDatTest <- dplyr::filter(test,Neighborhood =="Edwards" | Neighborhood =="NAmes" | Neighborhood == "BrkSide")
+neighborhoodDatTest <- neighborhoodDatTest[,c(13,47)]
+
+neighborhoodDatTrain$Neighborhood <- as.factor(neighborhoodDatTrain$Neighborhood)
+
+
+
+
+```
+
+
+
+
+
+```{r}
+
+#Some summary statistics on training data set
+summary(train)
+
+#Some summary statistics on training data set
+summary(test)
+
+
+#Some EDA on the training 
+
+
+# Basic histogram of prices
+p<-ggplot(neighborhoodDatTrain, aes(x=SalePrice)) + geom_histogram(color="black", fill="white")
+p
+
+# Basic histogram of sq footage
+q<-ggplot(neighborhoodDatTrain, aes(x=GrLivArea)) + geom_histogram(color="black", fill="white")
+q
+
+# Bar plot of neighborhoods
+ggplot(neighborhoodDatTrain) + geom_bar(aes(x = Neighborhood))
+
+#Scatter plots
+r <-ggplot(neighborhoodDatTrain, aes(x = (GrLivArea), y = (SalePrice),color=Neighborhood)) +
+    geom_point()
+r
+
+################################################################################
+#Log transform
+
+# Basic histogram of prices
+p<-ggplot(neighborhoodDatTrain, aes(x=log(SalePrice))) + geom_histogram(color="black", fill="white")
+p
+
+# Basic histogram of sq footage
+q<-ggplot(neighborhoodDatTrain, aes(x=log(GrLivArea))) + geom_histogram(color="black", fill="white")
+q
+
+#Scatter plots
+r <-ggplot(neighborhoodDatTrain, aes(x = log(GrLivArea), y = log(SalePrice),color=Neighborhood)) +
+    geom_point()
+r
+
+################################################################################
+#Create lm with outliers
+priceLm <- lm(log(SalePrice)~log(GrLivArea)+Neighborhood+Neighborhood*GrLivArea,data=neighborhoodDatTrain)
+summary(priceLm)
+confint(priceLm)
+
+#Look at ANOVA
+res.aov <- aov(log(SalePrice)~log(GrLivArea)+Neighborhood+Neighborhood*GrLivArea, data = neighborhoodDatTrain)
+summary(res.aov)
+
+plot(priceLm)
+
+
+#Model diagnostics, leverage plots
+leveragePlots(lm(log(SalePrice)~log(GrLivArea)+Neighborhood+Neighborhood*GrLivArea,data=neighborhoodDatTrain))
+
+#Model diagnostics, Cook's Distance
+plot(cooks.distance(lm(log(SalePrice)~log(GrLivArea)+Neighborhood+Neighborhood*GrLivArea,data=neighborhoodDatTrain)))
+
+
+sort(cooks.distance(lm(log(SalePrice)~log(GrLivArea)+Neighborhood+Neighborhood*GrLivArea,data=neighborhoodDatTrain)),decreasing = TRUE)
+
+
+
+#Model diagnostics, Quantile-Quantile plot
+qqPlot(log(neighborhoodDatTrain$SalePrice))
+
+
+#Hist of residuals
+h <- hist(priceLm$residuals, breaks = 10, density = 10,col = "lightgray",main = "Residuals") 
+xfit <- seq(min(priceLm$residuals), max(priceLm$residuals), length = 40) 
+yfit <- dnorm(xfit, mean = mean(priceLm$residuals), sd = sd(priceLm$residuals)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(priceLm$residuals) 
+
+
+################################################################################
+#Create lm without outliers
+noOutlierDat <- neighborhoodDatTrain[-c(169,190,339),]
+priceLm <- lm(log(SalePrice)~log(GrLivArea)+Neighborhood+Neighborhood*GrLivArea,data=noOutlierDat)
+summary(priceLm)
+confint(priceLm)
+
+#Internal CV
+trainIndex <- createDataPartition(neighborhoodDatTrain$SalePrice, p = .8, list = FALSE, times = 1)
+head(trainIndex)
+
+saleTrain <- neighborhoodDatTrain[ trainIndex,]
+saleTest  <- neighborhoodDatTrain[-trainIndex,]
+
+pred.w.plim <- predict(lm(log(SalePrice)~log(GrLivArea)+Neighborhood+Neighborhood*GrLivArea,data=saleTrain), saleTest, interval = "prediction")
+pred.w.clim <- predict(lm(log(SalePrice)~log(GrLivArea)+Neighborhood+Neighborhood*GrLivArea,data=saleTrain), saleTest, interval = "confidence")
+#View(exp(pred.w.plim))
+
+matplot(saleTest$SalePrice, cbind(pred.w.clim, pred.w.plim[,-1]),
+        lty = c(1,2,2,3,3), type = "l", ylab = "predicted y")
+
+
+
+#predict test data set
+pred.w.plim <- predict(priceLm, neighborhoodDatTest, interval = "prediction")
+#View(exp(pred.w.plim))
+#View(neighborhoodDatTrain$SalePrice)
+
+
+#Look at ANOVA
+res.aov <- aov(log(SalePrice)~log(GrLivArea)+Neighborhood+Neighborhood*GrLivArea, data = noOutlierDat)
+summary(res.aov)
+
+plot(priceLm)
+
+
+#Model diagnostics, leverage plots
+leveragePlots(lm(log(SalePrice)~log(GrLivArea)+Neighborhood+Neighborhood*GrLivArea,data=noOutlierDat))
+
+#Model diagnostics, Cook's Distance
+plot(cooks.distance(lm(log(SalePrice)~log(GrLivArea)+Neighborhood+Neighborhood*GrLivArea,data=noOutlierDat)))
+
+
+sort(cooks.distance(lm(log(SalePrice)~log(GrLivArea)+Neighborhood+Neighborhood*GrLivArea,data=noOutlierDat)),decreasing = TRUE)
+
+
+
+#Model diagnostics, Quantile-Quantile plot
+qqPlot(log(noOutlierDat$SalePrice))
+
+
+#Hist of residuals
+h <- hist(priceLm$residuals, breaks = 10, density = 10,col = "lightgray",main = "Residuals") 
+xfit <- seq(min(priceLm$residuals), max(priceLm$residuals), length = 40) 
+yfit <- dnorm(xfit, mean = mean(priceLm$residuals), sd = sd(priceLm$residuals)) 
+yfit <- yfit * diff(h$mids[1:2]) * length(priceLm$residuals) 
+
+
+
+
+
+
+CVdat <- CVlm(data = neighborhoodDatTrain, form.lm = formula(log(SalePrice)~log(GrLivArea)+Neighborhood+Neighborhood*GrLivArea),
+              m = 3, dots = FALSE, seed = 29, plotit = c("Observed","Residual"),
+              main="Small symbols show cross-validation predicted values",
+              legend.pos="topleft", printit = TRUE)
+CVdat
+
+(press(priceLm))
+
+```
+
+```{r}
+####Analysis 2####
+
+#read in data
+
+#train <- read.csv("train.csv")
+#test <- read.csv("test.csv")
+
+#train <- read.csv("C:/Users/ASUSL/OneDrive/Desktop/train1.csv",stringsAsFactors = T) #train
+train <- read.csv("C:/Users/ASUSL/OneDrive/Desktop/train1.csv",stringsAsFactors = F) #train
+#test <- read.csv("C:/Users/ASUSL/OneDrive/Desktop/test1.csv",stringsAsFactors = T) #test
+test <- read.csv("C:/Users/ASUSL/OneDrive/Desktop/test1.csv",stringsAsFactors = F) #test
+
+
+
+
+```
+
+```{r}
+#install.packages("qualtRics")
+library(qualtRics)
+
+#Look at outcome variable
+ggplot(data = train %>% filter(!is.na(log(SalePrice)))) +
+  geom_histogram(aes(x = log(SalePrice)), fill = "red", alpha = 1/2, binwidth = 0.01) +
+  scale_x_continuous(labels = dollar_format()) +
+  labs(title = "Outcome Sale Price, right skew") +
+  theme(plot.title = element_text(hjust = 0.5, size = 15, face = "bold"),)
+
+#Look at missing data
+na_prop <- train %>% 
+  dplyr::select(-SalePrice) %>% 
+  map(is.na) %>% 
+  map_dfr(mean) %>%
+  pivot_longer(cols = everything(), names_to = "variables", values_to = "prop") %>% 
+  filter(prop > 0) %>% 
+  arrange(desc(prop))
+
+na_prop %>%
+  ggplot(aes(x = fct_reorder(variables, prop), y = prop, fill = variables)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  theme(legend.position = "none") +
+  labs(
+    x = "Explanatory variables",
+    y = "The proportions of NA values per column"
+  ) +
+  scale_y_continuous(breaks = seq(0, 1, by = 0.1)) +
+  theme(axis.text.y = element_text(size = 10))
+
+train$PoolQC[is.na(train$PoolQC)] <- "None"
+train$MiscFeature[is.na(train$MiscFeature)] <- "None"
+train$Alley[is.na(train$Alley)] <- "No"
+train$Fence[is.na(train$Fence)] <- "No"
+train$FireplaceQu[is.na(train$FireplaceQu)] <- "No"
+train$GarageType[is.na(train$GarageType)] <- "No"
+train$GarageFinish[is.na(train$GarageFinish)] <- "No"
+train$GarageQual[is.na(train$GarageQual)] <- "No"
+train$GarageCond[is.na(train$GarageCond)] <- "No"
+train$BsmtExposure[is.na(train$BsmtExposure)] <- "NoBs"
+train$BsmtCond[is.na(train$BsmtCond)] <- "NoBs"
+train$BsmtQual[is.na(train$BsmtQual)] <- "NoBs"
+train$BsmtFinType1[is.na(train$BsmtFinType1)] <- "NoBs"
+train$BsmtFinType2[is.na(train$BsmtFinType2)] <- "NoBs"
+
+# To specify the levels of ordered factors
+PoolQC_lev <- c("None", "Fa", "TA", "Gd", "Ex")
+Fence_lev <- c("No", "MnWw", "GdWo", "MnPrv", "GdPrv")
+FireplaceQu_lev <- c("No", "Po", "Fa", "TA", "Gd", "Ex")
+GarageFinish_lev <- c("No", "Unf", "RFn", "Fin")
+GarageQual_lev <- c("No", "Po", "Fa", "TA", "Gd", "Ex")
+GarageCond_lev <- c("No", "Po", "Fa", "TA", "Gd", "Ex")
+BsmtExposure_lev <- c("NoBs", "No", "Mn", "Av", "Gd")
+BsmtCond_lev <- c("NoBs", "Po", "Fa", "TA", "Gd", "Ex")
+BsmtQual_lev <- c("NoBs", "Po", "Fa", "TA", "Gd", "Ex")
+BsmtFinType1_lev <- c("NoBs", "Unf", "LwQ", "Rec", "BLQ", "ALQ", "GLQ")
+BsmtFinType2_lev <- c("NoBs", "Unf", "LwQ", "Rec", "BLQ", "ALQ", "GLQ")
+
+train2 <- train %>%
+  mutate(PoolQC = parse_factor(PoolQC, levels = PoolQC_lev, ordered = TRUE),
+         MiscFeature = parse_factor(MiscFeature),
+         Alley = parse_factor(Alley),
+         Fence = parse_factor(Fence, levels = Fence_lev, ordered = TRUE),
+         FireplaceQu = parse_factor(FireplaceQu, levels = FireplaceQu_lev, ordered = TRUE),
+         GarageType = parse_factor(GarageType),
+         GarageFinish = parse_factor(GarageFinish, levels = GarageFinish_lev, ordered = TRUE),
+         GarageQual = parse_factor(GarageQual, levels = GarageQual_lev, ordered = TRUE),
+         GarageCond = parse_factor(GarageCond, levels = GarageCond_lev, ordered = TRUE),
+         BsmtExposure = parse_factor(BsmtExposure, levels = BsmtExposure_lev, ordered = TRUE),
+         BsmtCond = parse_factor(BsmtCond, levels = BsmtCond_lev, ordered = TRUE),
+         BsmtQual = parse_factor(BsmtQual, levels = BsmtQual_lev, ordered = TRUE),
+         BsmtFinType1 = parse_factor(BsmtFinType1, levels = BsmtFinType1_lev, ordered = TRUE),
+         BsmtFinType2 = parse_factor(BsmtFinType2, levels = BsmtFinType2_lev, ordered = TRUE))
+
+
+#lets impute some data
+#Col 4 lot frontage
+train[,4][is.na(train[,4])] <- round(mean(train[,4], na.rm = TRUE))
+
+#Col 27, massvnr
+train[,27][is.na(train[,27])] <- round(mean(train[,27], na.rm = TRUE))
+
+#Col 60, Garage year built
+train[,60][is.na(train[,60])] <- round(mean(train[,60], na.rm = TRUE))
+
+#Col 26, MasVnrType
+train$MasVnrType <- train$MasVnrType %>% tidyr::replace_na("Stone")
+
+#Col 43, electrical
+train$Electrical <- train$Electrical %>% tidyr::replace_na("SBrkr ")
+
+train$GrLivArea <- log(train$GrLivArea)
+
+
+sort(is.na(train),decreasing = TRUE)
+
+train[!complete.cases(train),]
+
+
+
+
+################################################################################
+#test dat
+#Look at missing data
+na_prop <- test %>% 
+ 
+  map(is.na) %>% 
+  map_dfr(mean) %>%
+  pivot_longer(cols = everything(), names_to = "variables", values_to = "prop") %>% 
+  filter(prop > 0) %>% 
+  arrange(desc(prop))
+
+na_prop %>%
+  ggplot(aes(x = fct_reorder(variables, prop), y = prop, fill = variables)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  theme(legend.position = "none") +
+  labs(
+    x = "Explanatory variables",
+    y = "The proportions of NA values per column"
+  ) +
+  scale_y_continuous(breaks = seq(0, 1, by = 0.1)) +
+  theme(axis.text.y = element_text(size = 10))
+
+test$PoolQC[is.na(test$PoolQC)] <- "None"
+test$MiscFeature[is.na(test$MiscFeature)] <- "None"
+test$Alley[is.na(test$Alley)] <- "No"
+test$Fence[is.na(test$Fence)] <- "No"
+test$FireplaceQu[is.na(test$FireplaceQu)] <- "No"
+test$GarageType[is.na(test$GarageType)] <- "No"
+test$GarageFinish[is.na(test$GarageFinish)] <- "No"
+test$GarageQual[is.na(test$GarageQual)] <- "No"
+test$GarageCond[is.na(test$GarageCond)] <- "No"
+test$BsmtExposure[is.na(test$BsmtExposure)] <- "NoBs"
+test$BsmtCond[is.na(test$BsmtCond)] <- "NoBs"
+test$BsmtQual[is.na(test$BsmtQual)] <- "NoBs"
+test$BsmtFinType1[is.na(test$BsmtFinType1)] <- "NoBs"
+test$BsmtFinType2[is.na(test$BsmtFinType2)] <- "NoBs"
+
+# To specify the levels of ordered factors
+PoolQC_lev <- c("None", "Fa", "TA", "Gd", "Ex")
+Fence_lev <- c("No", "MnWw", "GdWo", "MnPrv", "GdPrv")
+FireplaceQu_lev <- c("No", "Po", "Fa", "TA", "Gd", "Ex")
+GarageFinish_lev <- c("No", "Unf", "RFn", "Fin")
+GarageQual_lev <- c("No", "Po", "Fa", "TA", "Gd", "Ex")
+GarageCond_lev <- c("No", "Po", "Fa", "TA", "Gd", "Ex")
+BsmtExposure_lev <- c("NoBs", "No", "Mn", "Av", "Gd")
+BsmtCond_lev <- c("NoBs", "Po", "Fa", "TA", "Gd", "Ex")
+BsmtQual_lev <- c("NoBs", "Po", "Fa", "TA", "Gd", "Ex")
+BsmtFinType1_lev <- c("NoBs", "Unf", "LwQ", "Rec", "BLQ", "ALQ", "GLQ")
+BsmtFinType2_lev <- c("NoBs", "Unf", "LwQ", "Rec", "BLQ", "ALQ", "GLQ")
+
+test %>% mutate(PoolQC = parse_factor(PoolQC, levels = PoolQC_lev, ordered = TRUE),
+         MiscFeature = parse_factor(MiscFeature),
+         Alley = parse_factor(Alley),
+         Fence = parse_factor(Fence, levels = Fence_lev, ordered = TRUE),
+         FireplaceQu = parse_factor(FireplaceQu, levels = FireplaceQu_lev, ordered = TRUE),
+         GarageType = parse_factor(GarageType),
+         GarageFinish = parse_factor(GarageFinish, levels = GarageFinish_lev, ordered = TRUE),
+         GarageQual = parse_factor(GarageQual, levels = GarageQual_lev, ordered = TRUE),
+         GarageCond = parse_factor(GarageCond, levels = GarageCond_lev, ordered = TRUE),
+         BsmtExposure = parse_factor(BsmtExposure, levels = BsmtExposure_lev, ordered = TRUE),
+         BsmtCond = parse_factor(BsmtCond, levels = BsmtCond_lev, ordered = TRUE),
+         BsmtQual = parse_factor(BsmtQual, levels = BsmtQual_lev, ordered = TRUE),
+         BsmtFinType1 = parse_factor(BsmtFinType1, levels = BsmtFinType1_lev, ordered = TRUE),
+         BsmtFinType2 = parse_factor(BsmtFinType2, levels = BsmtFinType2_lev, ordered = TRUE))
+
+
+#lets impute some data
+#Col 4 lot frontage
+test[,4][is.na(test[,4])] <- round(mean(test[,4], na.rm = TRUE))
+
+#Col 27, massvnr
+test[,27][is.na(test[,27])] <- round(mean(test[,27], na.rm = TRUE))
+
+#Col 60, Garage year built
+test[,60][is.na(test[,60])] <- round(mean(test[,60], na.rm = TRUE))
+
+#Col 26, MasVnrType
+test$MasVnrType <- test$MasVnrType %>% tidyr::replace_na("Stone")
+
+#Col 43, electrical
+test$Electrical <- test$Electrical %>% tidyr::replace_na("SBrkr ")
+
+test$GrLivArea <- log(test$GrLivArea)
+
+
+
+
+
+
+```
+
+
+```{r}
+####Build Models####
+
+#Full model
+#fullmodel <- lm(log(SalePrice~).,data = train)
+
+Database <- data.frame(read.csv("C:/Users/ASUSL/OneDrive/Desktop/train1.csv",stringsAsFactors = T))
+Database2 <- data.frame(read.csv("C:/Users/ASUSL/OneDrive/Desktop/test1.csv",stringsAsFactors = T))
+                        
+fit <-lm(SalePrice~MSSubClass+LotArea+Street+LotConfig+ LandSlope +OverallQual +OverallCond +YearBuilt+RoofStyle +RoofMatl+PoolArea+BedroomAbvGr+ KitchenAbvGr+SaleType ,data=Database)
+#fit = lm(SalePrice~, data =Database)
+summary(fit) 
+
+#Stepwise model
+#step.model <- stepAIC(fullmodel,direction = "both",trace = FALSE)
+
+#c = ols_step_both_p(fit, prem = 0.05, pent = 0.05, details = TRUE)
+#d = ols_step_forward_p(fit, prem = 0.05, pent = 0.05, details = TRUE)
+#e = ols_step_backward_p(fit, prem = 0.05, pent = 0.05, details = TRUE)
+#custom <- fit = lm(SalePrice~MSSubClass+LotArea+Street+LotConfig+ LandSlope +OverallQual +OverallCond +YearBuilt+RoofStyle +RoofMatl+PoolArea+BedroomAbvGr+ KitchenAbvGr+SaleType ,data=Database)
+#custom <- lm(log(SalePrice)~OverallQual+log(GrLivArea)+Neighborhood+GarageCars+ExterQual+TotalBsmtSF+GarageArea+KitchenQual+YearBuilt,data= Database)
+#summary(custom)
+
+# Stepwise
+c = ols_step_both_p(fit, prem = 0.05, pent = 0.05, details = TRUE)
+ols_step_both_p(fit, prem = 0.05, pent = 0.05, details = TRUE)
+ols_step_both_p(fit)
+ols_step_both_aic(fit)
+ols_plot_added_variable(fit)
+
+#Forward
+d = ols_step_forward_p(fit, prem = 0.05, pent = 0.05, details = TRUE)
+
+ols_step_forward_p(fit)
+ols_step_forward_aic(fit)
+
+
+
+#Backward
+e = ols_step_backward_p(fit, prem = 0.05, pent = 0.05, details = TRUE)
+ols_step_backward_p(fit)
+ols_step_backward_aic(fit)
+
+#Custom 1
+
+custom <- lm(SalePrice~MSSubClass+LotArea+Street+LotConfig+ LandSlope +OverallQual +OverallCond +YearBuilt+RoofStyle +RoofMatl+PoolArea+BedroomAbvGr+ KitchenAbvGr+SaleType ,data=Database)
+summary(custom)
+
+#Custom 2
+custom2 <- lm(log(SalePrice)~OverallQual+log(GrLivArea)+Neighborhood+GarageCars+ExterQual+TotalBsmtSF+GarageArea+KitchenQual+YearBuilt,data= Database)
+summary(custom2)
+
+
+library(lmtest)
+bptest(fit)
+
+library(car)
+vif(fit)
+ols_plot_resid_lev(fit)
+
+
+model2 <- lm(SalePrice ~ OverallQual + GrLivArea + X1stFlrSF + GarageArea + YearBuilt + ExterQual + FullBath, data = Database)
+summary(model2)
+bptest(model2)
+ols_plot_resid_lev(model2)
+
+library(epiR)
+data <- as.table(matrix(c(670,202,74,640), nrow = 2, byrow = TRUE))
+rval <- epi.tests(data, conf.level = 0.95)
+print(rval)  
+
+model_fit_stats <- function(linear.model) {
+  r.sqr <- summary(linear.model)$r.squared
+  adj.r.sqr <- summary(linear.model)$adj.r.squared
+  pre.r.sqr <- pred_r_squared(linear.model)
+  PRESS <- PRESS(linear.model)
+  return.df <- data.frame(r.squared = r.sqr, adj.r.squared = adj.r.sqr, pred.r.squared = pre.r.sqr, press = PRESS)
+  return(return.df)
+}
+pred_r_squared <- function(linear.model) {
+  #' Use anova() to get the sum of squares for the linear model
+  lm.anova <- anova(linear.model)
+  #' Calculate the total sum of squares
+  tss <- sum(lm.anova$'Sum Sq')
+  # Calculate the predictive R^2
+  pred.r.squared <- 1-PRESS(linear.model)/(tss)
+  
+  return(pred.r.squared)
+}
+PRESS <- function(linear.model) {
+  #' calculate the predictive residuals
+  pr <- residuals(linear.model)/(1-lm.influence(linear.model)$hat)
+  #' calculate the PRESS
+  PRESS <- sum(pr^2)
+  
+  return(PRESS)
+}
+AIC(fit)
+
+
+#trying to build a table of the models
+#model.sum.df = data.frame()
+#model.sum.df = data.frame(model_name, AUC_score, AIC, Test_Accuracy, Test_Sensitivity, Test_Specificity, Threshold)
+#model.sum.df$AIC = format(round(as.numeric(model.sum.df$AIC), 4), nsmall = 4)
+#ordered.model.sum.df = model.sum.df[order(-AUC_score),]
+#rownames(ordered.model.sum.df) = 1:nrow(ordered.model.sum.df)
+
+
+
+```

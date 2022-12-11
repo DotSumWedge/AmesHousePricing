@@ -4,7 +4,7 @@ author: "Joey Hernandez"
 date: "2022-12-11"
 output: html_document
 ---
-Libraries
+Loading Libraries that will be used for analysis, investigation and modeling.
 ```{r, include=FALSE}
 library(naniar)
 library(tidyverse)
@@ -63,7 +63,7 @@ library(sjmisc)
 library(sjlabelled)
 ```
 
-Datasets
+Loading datasets to be used in our work to follow:
 ```{r, include=FALSE}
 #AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
 #AmesHouesingTestDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv"))
@@ -75,7 +75,8 @@ AmesHouesingDataFrame_test<-read.csv("C:/Users/Joey/Desktop/house-prices-advance
 #AmesHouesingDataFrame <- read.csv("C:/Users/nicol/OneDrive/Desktop/test1.csv")
 ```
 
-Log Transformations
+Log Transformations:
+To meet assumption of the data so that we can make accurate predictions and models we will Log Transform the data. Notice that some of the transformations contain + 1, this is due to 0 being part of the data that is being transformed, and since you cannot LOG 0 we add a consistent variable so that we can proceed with the transformations. 
 ```{r, include=FALSE}
 # Perform log transformations on columns that require it which was determined from the various *EDA.Rmd files and listed in Notes.txt
 
@@ -103,7 +104,8 @@ AmesHouesingDataFrame$LogGarageArea = log(AmesHouesingDataFrame$GarageArea + 1)
 AmesHouesingDataFrame$LogMasVnrArea = log(AmesHouesingDataFrame$MasVnrArea + 1)
 ```
 
-Addressing NA Values
+Addressing NA Values: 
+There are many NA values, but in our investigation we learned that NA values in many cases were due to a house that didn't include a certain feature of the home/build rather than an actual "missing" piece of data. 
 ```{r include=FALSE}
 # The data contain many NA values. These NA values are not necessarily missing data, but can be thought of as
 # a missing feature of certain homes.
@@ -182,7 +184,8 @@ AmesHouesingDataFrame$MasVnrType[is.na(AmesHouesingDataFrame$MasVnrType)] <- "No
 AmesHouesingDataFrame$MasVnrType <- as.factor(AmesHouesingDataFrame$MasVnrType)
 ```
 
-Numerical Encoding
+Numerical Encoding: Part of our Exploratory data analysis was to view correlative relationships,
+and in order to do that certain features needed to be transformed from character factors to numeric levels instead. 
 ```{r}
 # Numerical Encoding so that we can explore correlation:
 
@@ -219,7 +222,8 @@ AmesHouesingDataFrame$LandSlopeNum <- as.numeric(factor(AmesHouesingDataFrame$La
 
 ```
 
-Outlier Handling
+Outlier Handling: 
+The code that follows here is so that we are able to view the outlier and then remove the outlier (after checking that it made sense and was appropriate to remove)
 ```{r}
 # AmesHouesingDataFrame
 Outliers = AmesHouesingDataFrame[order(-AmesHouesingDataFrame$GrLivArea),]
@@ -229,16 +233,12 @@ AmesHouesingDataFrame = AmesHouesingDataFrame[!(AmesHouesingDataFrame$Id=="524" 
 
 ```
 
-Setting up Test Data for Predictions
-```{r}
 
-
-```
-
-
-
-
-Feature Selection for Custom Model
+Feature Selection and testing for Custom Model:
+using correlative relationships we then put together a list of variables in which
+we deemed appropriate for integration into our custom model. 
+After building our custom array of variables we broke our model into a test and train split
+then fit the forward model and then tested it against our test data before testing it against the true training data.   
 ```{r}
 custom_var = c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
               'ExterCondNum','LogTotalBsmtSF','HeatingQCNum', 
@@ -278,6 +278,10 @@ home_fit_prediction = data.frame("Predicted" = pred1,
 
 ```
 
+
+Setting up Test Data for Predictions:
+Because we have transformed a lot of our training data, we need to make the same transformations
+to our testing data as well. this process included some NA handling, feature transformation and essentially all of the steps we performed above.
 ```{r}
 hdata <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
 #hdata <- read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv",header = TRUE)
@@ -405,8 +409,9 @@ names(h_prediction) <- c("ID", "SalePrice")
 ```
 
 
-
-Model Selection Methods : Forward Selection
+Feature Selection and testing for Forward Model:
+using the forward selection method we put together a list of variables which met the 
+forward selection criteria. Once our model was fit with the forward selection features we used it to perform predictions against the true test data. 
 ```{r}
 # ols_step_forward_p(home_fit, details = FALSE)
 #
@@ -445,6 +450,7 @@ names(FWPrediction) <- c("ID", "SalePrice")
 ```
 
 Forward Selection Performance Stats:
+The code below contain functions that will return specific values in which we can measure performance for our model. 
 ```{r}
 # FORWARD MODEL STATS
 
@@ -489,6 +495,9 @@ model_fit_stats(model_forward)
 ```
 
 Model Selection Methods : Stepwise Selection
+using the Stepwise selection method we put together a list of variables which met the 
+Stepwise selection criteria. Once our model was fit with the Stepwise selection features we used it to perform predictions against the true test data. 
+
 ```{r}
 #ols_step_both_p(home_reg2,details = FALSE)
 
@@ -523,6 +532,7 @@ names(swPrediction) <- c("ID", "SalePrice")
 ```
 
 Stepwise Selection Performance Stats:
+The code below contain functions that will return specific values in which we can measure performance for our model. 
 ```{r}
 # STEP WISE STATS 
 
@@ -565,6 +575,8 @@ model_fit_stats(model_stepwise)
 ```
 
 Model Selection Methods : Backward Selection
+using the Backward selection method we put together a list of variables which met the 
+Backward selection criteria. Once our model was fit with the Backward selection features we used it to perform predictions against the true test data.
 ```{r}
 bk_var <- c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
             'ExterCondNum','LogTotalBsmtSF','HeatingQCNum',
@@ -599,6 +611,7 @@ names(BWPrediction) <- c("ID", "SalePrice")
 ```
 
 Backward Selection Performance Stats:
+The code below contain functions that will return specific values in which we can measure performance for our model. 
 ```{r}
 # BACKWARD PERFORMANCE STATS:
 

@@ -151,18 +151,18 @@ n3homedf_noout %>% ggplot(aes(log(GrLivArea),log(SalePrice),  color = Electrical
 
 ```
 After visually understanding some of the features of the outlier home in question, 
-it is to our understanding that while the home is not "part of" the majority of the dataset 
+it is to our understanding that while the home is not "part of" the majority of the data set 
 in terms of where most of the point lie, it is not due to some abnormality that we can see or 
 understand given the data. In other words, the reasons for the abnormal point of this data
-seem to be due to certain features of the home/land/plot and the small GrLivArea (squarefootage), 
+seem to be due to certain features of the home/land/plot and the small GrLivArea (square footage), 
 so we will proceed with this point in the data and may consider a model which includes and excludes it. 
 
 
-Next we will build a model that will determine if the squarefootage of the living area and its Sale Price 
+Next we will build a model that will determine if the square footage of the living area and its Sale Price 
 is dependent on which Neighborhood it is in. 
 
 To do this it will help first to test if all the regression lines are parallel. if they are, then we can 
-check for a differnce in Sale Price across all Neighborhoods by looking at the intercept. 
+check for a difference in Sale Price across all Neighborhoods by looking at the intercept. 
 ```{r}
 # full model
 # creating log var

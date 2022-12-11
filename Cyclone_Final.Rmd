@@ -1,10 +1,15 @@
 ---
-title: "Cyclone Final"
-author: "Joey Hernandez"
-date: "2022-12-11"
-output: html_document
+always_allow_html: TRUE
+output: 
+  html_document: 
+    code_folding: hide
 ---
-Loading Libraries that will be used for analysis, investigation and modeling.
+<hr>
+<center><h1>Data and Transformations</h1></center>
+<hr>
+
+
+
 ```{r, include=FALSE}
 library(naniar)
 library(tidyverse)
@@ -63,21 +68,24 @@ library(sjmisc)
 library(sjlabelled)
 ```
 
-Loading datasets to be used in our work to follow:
+
+
 ```{r, include=FALSE}
 #AmesHouesingDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/train.csv"))
 #AmesHouesingTestDataFrame = data.frame(read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv"))
 
 AmesHouesingDataFrame <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
 AmesHouesingDataFrame_test<-read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv")
+homedf <- read.csv("C:/Users/Joey/Desktop/stat project/AmesHousePricing/train.csv")
 
 #AmesHouesingDataFrame <- read.csv("C:/Users/nicol/OneDrive/Desktop/train1.csv")
 #AmesHouesingDataFrame <- read.csv("C:/Users/nicol/OneDrive/Desktop/test1.csv")
 ```
 
+
 Log Transformations:
 To meet assumption of the data so that we can make accurate predictions and models we will Log Transform the data. Notice that some of the transformations contain + 1, this is due to 0 being part of the data that is being transformed, and since you cannot LOG 0 we add a consistent variable so that we can proceed with the transformations. 
-```{r, include=FALSE}
+```{r, message=FALSE, }
 # Perform log transformations on columns that require it which was determined from the various *EDA.Rmd files and listed in Notes.txt
 
 AmesHouesingDataFrame$LogSalePrice = log(AmesHouesingDataFrame$SalePrice)
@@ -103,6 +111,7 @@ AmesHouesingDataFrame$LogGarageArea = log(AmesHouesingDataFrame$GarageArea + 1)
 
 AmesHouesingDataFrame$LogMasVnrArea = log(AmesHouesingDataFrame$MasVnrArea + 1)
 ```
+
 
 Addressing NA Values: 
 There are many NA values, but in our investigation we learned that NA values in many cases were due to a house that didn't include a certain feature of the home/build rather than an actual "missing" piece of data. 
@@ -184,9 +193,10 @@ AmesHouesingDataFrame$MasVnrType[is.na(AmesHouesingDataFrame$MasVnrType)] <- "No
 AmesHouesingDataFrame$MasVnrType <- as.factor(AmesHouesingDataFrame$MasVnrType)
 ```
 
+
 Numerical Encoding: Part of our Exploratory data analysis was to view correlative relationships,
 and in order to do that certain features needed to be transformed from character factors to numeric levels instead. 
-```{r}
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
 # Numerical Encoding so that we can explore correlation:
 
 AmesHouesingDataFrame$ExterCondNum <- as.numeric(factor(AmesHouesingDataFrame$ExterCond,
@@ -222,9 +232,10 @@ AmesHouesingDataFrame$LandSlopeNum <- as.numeric(factor(AmesHouesingDataFrame$La
 
 ```
 
+
 Outlier Handling: 
 The code that follows here is so that we are able to view the outlier and then remove the outlier (after checking that it made sense and was appropriate to remove)
-```{r}
+```{r, message=FALSE, warning=FALSE}
 # AmesHouesingDataFrame
 Outliers = AmesHouesingDataFrame[order(-AmesHouesingDataFrame$GrLivArea),]
 Outliers = Outliers[1:2,]
@@ -234,12 +245,352 @@ AmesHouesingDataFrame = AmesHouesingDataFrame[!(AmesHouesingDataFrame$Id=="524" 
 ```
 
 
+<hr>
+<center><h1>Exploratory Data Analysis</h1></center>
+<hr>
+
+
+Here we begin to explore our data visually to understand any relationship or distributions of data that we may not fully grap with simply looking at tables of data. 
+```{r, fig.align='center'}
+# Histogram that shows a right skewed normal distribution
+hist(AmesHouesingDataFrame$SalePrice, xlab='House Price (dollars)', main='Histogram of Housing Prices')
+
+# Box plot that shows a right skew
+boxplot(AmesHouesingDataFrame$SalePrice, xlab = "Houses", ylab = "House Price (dollars)", main = "Boxplot of Housing Prices")
+
+# QQ plot where the prices drift away from the identity line
+qqnorm(AmesHouesingDataFrame$SalePrice, pch = 1, frame = FALSE, main = "Q-Q Plot For Housing Prices", ylab = "House Price (dollars)")
+qqline(AmesHouesingDataFrame$SalePrice, col = "steelblue", lwd = 2)
+
+# A log transformation of housing prices reduces the right skewness of the histogram and boxplot as well as keeps housing prices closer to the identity line in the QQ plot
+
+# Histogram
+hist(AmesHouesingDataFrame$LogSalePrice, xlab='House Price in log(dollars)', main='Histogram of Log Housing Prices')
+
+# Box plot
+boxplot(AmesHouesingDataFrame$LogSalePrice, xlab = "Houses", ylab = "House Price in log(dollars)", main = "Boxplot of Log Housing Prices")
+
+# QQ plot
+qqnorm(AmesHouesingDataFrame$LogSalePrice, pch = 1, frame = FALSE, main = "Q-Q Plot for Log Housing Prices", ylab = "House Price in log(dollars)")
+
+# selecting var for exploration:
+corr_vars <- c("SalePrice", "OverallQual", "OverallCond", "YearBuilt",
+               "ExterCondNum", "TotalBsmtSF", "HeatingQCNum","CentralAirNum",
+               "GrLivArea", "BedroomAbvGr", "KitchenAbvGr", "TotRmsAbvGrd",
+               "Fireplaces", "GarageArea", "OpenPorchSF", "PoolArea",
+               "YrSold")
+# getting the rows for each of the vars to be explored:
+corr_df <- AmesHouesingDataFrame[, corr_vars]
+corr_df <- cor(corr_df)
+
+# plotting corr plot with ggcorrplot
+ggcorrplot(corr = corr_df, lab = TRUE, lab_size = 2,
+           colors = c("#6D9EC1", "white", "#E46726")) +
+  labs(title = "Correlation Between Variables and Attrition", 
+       subtitle = "Netural and Positive Correlation") +
+  theme(plot.title = element_text(hjust = .5),
+        plot.subtitle = element_text(hjust = .5))
+```
+
+
+
+
+<hr>
+<center><h1>Analysis 2</h1></center>
+<hr>
+
+* First we check assumptions of data for SalePrice and GrLivArea. The response var
+for our study will be SalePrice
+
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
+plot(homedf$GrLivArea, homedf$SalePrice)
+```
+
+
+In plotting the GrLivArea / SalePrice scatter we see that there are some outliers in the data. 
+we will proceed to visually inspect these observations in the scope of the Question of interest neighborhoods 
+before we decide to proceed with any transforamtions of the data. 
+
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
+n3homedf <- homedf %>% filter(Neighborhood == "NAmes" | Neighborhood =="Edwards" | Neighborhood =="BrkSide")
+
+plot(n3homedf$GrLivArea, n3homedf$SalePrice)
+
+
+```
+
+
+It turns out the outliers within the data set lie in the neighborhoods we are investigating. 
+To address these concerns we will apply a transformation to the data to see if the outliers 
+can be addressed that way. 
+
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
+plot(log(n3homedf$GrLivArea), n3homedf$SalePrice)
+plot(log(n3homedf$GrLivArea), log(n3homedf$SalePrice))
+```
+
+
+the data seems to be much more visually appropriate using a linear-log transformation,
+and even more so using a log-log transformation. We will proceed with a log-log transformation
+and create a linear regression line so that we can further test assumptions of the data. 
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
+homefit <- lm(log(SalePrice)~log(GrLivArea), data = n3homedf)
+nat_fit <- lm(SalePrice~GrLivArea, data = n3homedf)
+ols_plot_diagnostics(nat_fit)
+ols_plot_diagnostics(homefit)
+
+```
+
+
+as it turns out the diagnostics of our fit still show some outliers present. 
+the cook's D chart also show that we have a couple points that are low residual
+and high leverage. We will investigate these outliers to see if it makes sense to keep 
+them in the data or if they really are "normal" and expected. 
+An additional option for us is to narrow the scope of our model and consider that 
+maybe those points are of a different "class" or "category" than the bulk of our data. 
+
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
+# exploring the outliers
+n3homedf %>% ggplot(aes(log(GrLivArea), log(SalePrice), color = as.factor(SaleCondition == "Partial"))) +
+  geom_point() + ggtitle("Scatter plot of Home Sale Condition") +
+  xlab("Log GrLivArea") +
+  ylab("Log Sale Price")
+
+n3homedf %>% ggplot(aes(log(GrLivArea), log(SalePrice), color = as.factor(SaleType))) +
+  geom_point() + ggtitle("Scatterplot of Home Sale Type") + 
+  xlab("Log GrLivArea") + ylab("Log Sale Price")
+
+n3homedf %>% ggplot(aes(log(GrLivArea), log(SalePrice), color = as.factor(YrSold == 2008 | YrSold == 2007))) + geom_point() + ggtitle("Scatterplot of Year Home Sold") + xlab("Year Sold") + ylab("Log Sale Price")
+
+
+# dim(n3homedf %>% filter(SaleCondition == "Partial"))
+# dim(n3homedf)
+```
+
+
+upon further investigation of the 2 outliers that we are assessing. It appears that both homes were of 
+a "New" sale type, during 2007 and 2008, both of which are years in which new homes would be expected to have sold for losses or abnormal pricing due to the recession and housing market collapse. 
+
+The two home were also of a sale condition "Parital". a "Partial" Sale condition only make up 1% of the home sale condition types within the home sales for these 3 neighborhoods. 
+
+In conclusion, the abnormality of the sales of these two homes seems to be attributed to circumstances 
+that are not what is to be expected under normal market conditions and predictions.
+We will view the diagnositcs for the data with and without the outliers to make our final determination
+on whether to include or exclude these points. 
+
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
+# to find outliers
+Outliers = homedf[order(-homedf$GrLivArea),]
+Outliers = Outliers[1:2,]
+# discovered the outliers
+
+# creating a new df with no outliers to see if we can better fit the assumptions needed to proceed with our analysis. 
+homedf_noout = homedf[!(homedf$Id=="524" | homedf$Id=="1299"),]
+n3homedf_noout <- homedf_noout %>% filter(Neighborhood == "NAmes"|Neighborhood == "Edwards"| Neighborhood == "BrkSide")
+```
+
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
+fit_no_outliers <- lm(log(SalePrice)~log(GrLivArea), data = n3homedf_noout)
+
+ols_plot_diagnostics(fit_no_outliers)
+
+```
+
+
+in addition to the justification to leave out our 2 discovered ourliers, the data without the outliers also better fits the model assumptions for linear regression. we will proceed without these two points.
+
+
+
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
+plot(n3homedf_noout$GrLivArea, n3homedf_noout$SalePrice)
+plot(log(n3homedf_noout$GrLivArea), log(n3homedf_noout$SalePrice))
+```
+
+
+The data without transformation looks to be much more visually acceptable. There does however seem to be
+evidence of increasing standard deviation. After performing a LOG-LOG transformation on the data, it appears
+to be much more visually appropriate. Once again we will now proceed with creating a fit to determine if the 
+diagnostics of the linear model fit our assumptions.
+
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
+no_outlier_fit <- lm(log(SalePrice)~log(GrLivArea), data = n3homedf_noout)
+ols_plot_diagnostics(no_outlier_fit)
+#summary(no_outlier_fit)
+#summary(nat_fit)
+
+```
+
+
+it appears that observation 135 is pulling the data to the left quite a bit. we will investigate this point
+to better understand if it makes sense to keep in the data. 
+
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
+# color - LAND SLOPE - MOD - MODERATE SLOPE
+n3homedf_noout %>% ggplot(aes(log(GrLivArea),log(SalePrice),  color = as.factor(LandSlope))) +
+  geom_point()
+
+
+# color - LAND CONTOUR - HLS - HILLSIDE - SIGNI. SLOPE FROM SIDE TO SIDE
+n3homedf_noout %>% ggplot(aes(log(GrLivArea),log(SalePrice),  color = as.factor(LandContour))) +
+  geom_point() 
+
+
+# color - LOT SHAPE - REG (not a detriment for us here)
+n3homedf_noout %>% ggplot(aes(log(GrLivArea),log(SalePrice),  color = as.factor(LotShape))) +
+  geom_point() 
+
+# color - MS ZONING - RL (not a detriment for us here) - RESIDENTIAL LOW DENSITY
+n3homedf_noout %>% ggplot(aes(log(GrLivArea),log(SalePrice),  color = as.factor(MSZoning))) +
+  geom_point() 
+
+# color - MS SUBCLASS - 20 - 1 story 1946 & Newer & newer all styles
+n3homedf_noout %>% ggplot(aes(log(GrLivArea),log(SalePrice),  color = as.factor(MSSubClass == 20))) +
+  geom_point() 
+
+# color - ELECTRICAL - FuseF - 60 AMP Fuse Box and mostly Romex Wiring (Fair)
+n3homedf_noout %>% ggplot(aes(log(GrLivArea),log(SalePrice),  color = Electrical == "FuseF")) +
+  geom_point() 
+
+```
+
+
+After visually understanding some of the features of the outlier home in question, 
+it is to our understanding that while the home is not "part of" the majority of the dataset 
+in terms of where most of the point lie, it is not due to some abnormality that we can see or 
+understand given the data. In other words, the reasons for the abnormal point of this data
+seem to be due to certain features of the home/land/plot and the small GrLivArea (squarefootage), 
+so we will proceed with this point in the data and may consider a model which includes and excludes it. 
+
+
+Next we will build a model that will determine if the squarefootage of the living area and its Sale Price 
+is dependent on which Neighborhood it is in. 
+
+To do this it will help first to test if all the regression lines are parallel. if they are, then we can 
+check for a differnce in Sale Price across all Neighborhoods by looking at the intercept. 
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
+# full model
+# creating log var
+n3homedf_noout$logGLA <- log(n3homedf_noout$GrLivArea)
+n3homedf_noout$logSP <- log(n3homedf_noout$SalePrice)
+# setting Neighborhood as factor to use as ref. 
+n3homedf_noout$Neighborhood <- as.factor(n3homedf_noout$Neighborhood)
+
+full_model <- lm(logSP ~ logGLA * relevel(Neighborhood, ref = "Edwards"), data = n3homedf_noout)
+ols_plot_diagnostics(full_model)
+#summary(full_model) # adj.R2 = .5216
+
+
+# Reduced Model
+red_model <- lm(logSP~logGLA + relevel(Neighborhood, ref = "Edwards"), data = n3homedf_noout)
+ols_plot_diagnostics(red_model)
+#summary(red_model) # adj. R2 = .5002
+
+```
+
+
+after analysis of the full and reduced model, because the adjusted R^2 favors the model
+with the interaction parameters we will proceed with the full model going forward.  
+
+
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
+# REDUCED MODEL
+model_fit_stats <- function(linear.model) {
+  r.sqr <- summary(linear.model)$r.squared
+  adj.r.sqr <- summary(linear.model)$adj.r.squared
+  pre.r.sqr <- pred_r_squared(linear.model)
+  PRESS <- PRESS(linear.model)
+  return.df <- data.frame(r.squared = r.sqr, adj.r.squared = adj.r.sqr, pred.r.squared = pre.r.sqr, press = PRESS)
+  return(return.df)
+}
+
+
+pred_r_squared <- function(linear.model) {
+  #' Use anova() to get the sum of squares for the linear model
+  lm.anova <- anova(linear.model)
+  #' Calculate the total sum of squares
+  tss <- sum(lm.anova$'Sum Sq')
+  # Calculate the predictive R^2
+  pred.r.squared <- 1-PRESS(linear.model)/(tss)
+  
+  return(pred.r.squared)
+}
+
+
+PRESS <- function(linear.model) {
+  #' calculate the predictive residuals
+  pr <- residuals(linear.model)/(1-lm.influence(linear.model)$hat)
+  #' calculate the PRESS
+  PRESS <- sum(pr^2)
+  
+  return(PRESS)
+}
+# pred_r_squared(red_model) # pred r2
+# PRESS(red_model)
+# 
+# AIC(red_model)
+# 
+model_fit_stats(red_model)
+#summary(red_model)
+
+```
+
+```{r, message=FALSE, warning=FALSE, fig.align='center'}
+# FULL MODEL
+model_fit_stats <- function(linear.model) {
+  r.sqr <- summary(linear.model)$r.squared
+  adj.r.sqr <- summary(linear.model)$adj.r.squared
+  pre.r.sqr <- pred_r_squared(linear.model)
+  PRESS <- PRESS(linear.model)
+  return.df <- data.frame(r.squared = r.sqr, adj.r.squared = adj.r.sqr, pred.r.squared = pre.r.sqr, press = PRESS)
+  return(return.df)
+}
+
+
+pred_r_squared <- function(linear.model) {
+  #' Use anova() to get the sum of squares for the linear model
+  lm.anova <- anova(linear.model)
+  #' Calculate the total sum of squares
+  tss <- sum(lm.anova$'Sum Sq')
+  # Calculate the predictive R^2
+  pred.r.squared <- 1-PRESS(linear.model)/(tss)
+  
+  return(pred.r.squared)
+}
+#pred_r_squared(red_model) # pred r2
+
+PRESS <- function(linear.model) {
+  #' calculate the predictive residuals
+  pr <- residuals(linear.model)/(1-lm.influence(linear.model)$hat)
+  #' calculate the PRESS
+  PRESS <- sum(pr^2)
+  
+  return(PRESS)
+}
+# 
+# PRESS(full_model)
+# 
+# AIC(full_model)
+
+model_fit_stats(full_model)
+#summary(full_model)
+
+```
+
+
+
+
+
+<hr>
+<center><h1>Analysis 2</h1></center>
+<hr>
+
+
 Feature Selection and testing for Custom Model:
 using correlative relationships we then put together a list of variables in which
 we deemed appropriate for integration into our custom model. 
 After building our custom array of variables we broke our model into a test and train split
 then fit the forward model and then tested it against our test data before testing it against the true training data.   
-```{r}
+```{r, message=FALSE, warning=FALSE}
 custom_var = c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
               'ExterCondNum','LogTotalBsmtSF','HeatingQCNum', 
               'BedroomAbvGr','Fireplaces', 'LogGarageArea', 
@@ -282,7 +633,7 @@ home_fit_prediction = data.frame("Predicted" = pred1,
 Setting up Test Data for Predictions:
 Because we have transformed a lot of our training data, we need to make the same transformations
 to our testing data as well. this process included some NA handling, feature transformation and essentially all of the steps we performed above.
-```{r}
+```{r, message=FALSE, warning=FALSE}
 hdata <- read.csv("C:/Users/Joey/Desktop/house-prices-advanced-regression-techniques/test.csv",header = TRUE)
 #hdata <- read.csv("C:/SMU MS Data Science/StatisticalFoundations6371/AmesHousePricing/test.csv",header = TRUE)
 
@@ -412,7 +763,7 @@ names(h_prediction) <- c("ID", "SalePrice")
 Feature Selection and testing for Forward Model:
 using the forward selection method we put together a list of variables which met the 
 forward selection criteria. Once our model was fit with the forward selection features we used it to perform predictions against the true test data. 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 # ols_step_forward_p(home_fit, details = FALSE)
 #
 # var selected by forward selection methods
@@ -449,9 +800,10 @@ names(FWPrediction) <- c("ID", "SalePrice")
 # CV PRESS 28.0415
 ```
 
+
 Forward Selection Performance Stats:
 The code below contain functions that will return specific values in which we can measure performance for our model. 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 # FORWARD MODEL STATS
 
 pred_r_squared <- function(linear.model) {
@@ -484,21 +836,22 @@ model_fit_stats <- function(linear.model) {
   return.df <- data.frame(r.squared = r.sqr, adj.r.squared = adj.r.sqr, pred.r.squared = pre.r.sqr, press = PRESS)
   return(return.df)
 }
-pred_r_squared(model_forward)
-
-PRESS(model_forward)
-
-AIC(model_forward)
+# pred_r_squared(model_forward)
+# 
+# PRESS(model_forward)
+# 
+# AIC(model_forward)
 
 model_fit_stats(model_forward)
 
 ```
 
+
 Model Selection Methods : Stepwise Selection
 using the Stepwise selection method we put together a list of variables which met the 
 Stepwise selection criteria. Once our model was fit with the Stepwise selection features we used it to perform predictions against the true test data. 
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 #ols_step_both_p(home_reg2,details = FALSE)
 
 step_wise_var <- c("LogSalePrice","OverallQual","LogGrLivArea","YearBuilt",
@@ -531,9 +884,10 @@ names(swPrediction) <- c("ID", "SalePrice")
 # cv press 28.22304
 ```
 
+
 Stepwise Selection Performance Stats:
 The code below contain functions that will return specific values in which we can measure performance for our model. 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 # STEP WISE STATS 
 
 pred_r_squared <- function(linear.model) {
@@ -564,20 +918,21 @@ model_fit_stats <- function(linear.model) {
   return.df <- data.frame(r.squared = r.sqr, adj.r.squared = adj.r.sqr, pred.r.squared = pre.r.sqr, press = PRESS)
   return(return.df)
 }
-pred_r_squared(model_stepwise)
-
-PRESS(model_stepwise)
-
-AIC(model_stepwise)
+# pred_r_squared(model_stepwise)
+# 
+# PRESS(model_stepwise)
+# 
+# AIC(model_stepwise)
 
 model_fit_stats(model_stepwise)
 
 ```
 
+
 Model Selection Methods : Backward Selection
 using the Backward selection method we put together a list of variables which met the 
 Backward selection criteria. Once our model was fit with the Backward selection features we used it to perform predictions against the true test data.
-```{r}
+```{r, message=FALSE, warning=FALSE}
 bk_var <- c('LogSalePrice','OverallQual','OverallCond','YearBuilt',
             'ExterCondNum','LogTotalBsmtSF','HeatingQCNum',
             'CentralAirNum','BedroomAbvGr','KitchenAbvGr',
@@ -610,9 +965,10 @@ names(BWPrediction) <- c("ID", "SalePrice")
 # cv press 28.06264
 ```
 
+
 Backward Selection Performance Stats:
 The code below contain functions that will return specific values in which we can measure performance for our model. 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 # BACKWARD PERFORMANCE STATS:
 
 
@@ -646,11 +1002,11 @@ model_fit_stats <- function(linear.model) {
   return.df <- data.frame(r.squared = r.sqr, adj.r.squared = adj.r.sqr, pred.r.squared = pre.r.sqr, press = PRESS)
   return(return.df)
 }
-pred_r_squared(model_bk)
-
-PRESS(model_bk)
-
-AIC(model_bk)
+# pred_r_squared(model_bk)
+# 
+# PRESS(model_bk)
+# 
+# AIC(model_bk)
 
 model_fit_stats(model_bk)
 
